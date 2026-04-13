@@ -6,7 +6,7 @@ A **YAML-only test automation framework** for Playwright, designed for teams tha
 
 ---
 
-## Quick Start
+## Quick Start (5 minutes)
 
 ### 1. Install
 
@@ -17,227 +17,31 @@ npm run setup  # Installs Playwright browsers
 
 ### 2. Configure `.env`
 
-Copy `.env.example` to `.env` and fill in your values:
+Copy `.env.example` to `.env`:
 
 ```bash
 cp .env.example .env
 ```
 
-Edit `.env`:
+Edit `.env` with real credentials and URLs:
+
 ```bash
-BASE_URL=http://localhost:3000
-API_BASE_URL=http://localhost:3000/api
-ADMIN_USERNAME=admin@example.com
-ADMIN_PASSWORD=your_password
+# QA Playground Banking App (example)
+BASE_URL=https://www.qaplayground.com/bank
+API_BASE_URL=https://www.qaplayground.com/api
+
+# Test user credentials
+ADMIN_USERNAME=admin
+ADMIN_PASSWORD=admin123
+
+# Optional: Database connection for data validation
 DB_URL=postgresql://user:password@localhost:5432/mydb
 ```
 
-### 3. Write a Test
+### 3. Create Your First Test
 
-Create `tests/my_first_test.yaml`:
+**Step 1: Define the page object** (`pages/login.yaml`)
 
-```yaml
-name: "User login"
-tags: [smoke, ui]
-role: admin
-
-steps:
-  - ui:
-      pageObject: LoginPage
-      action: login
-
-  - assert:
-      selector:
-        type: text
-        value: "Welcome"
-      visible: true
-
-  - api:
-      method: GET
-      url: "ENV.API_BASE_URL/profile"
-      assert:
-        status: 200
-```
-
-### 4. Run Tests
-
-```bash
-# Run all tests
-npm test
-
-# Run by tag
-npm test -- --tag smoke
-
-# Run single test with variable preview
-npm test -- --dry-run --test tests/my_first_test.yaml
-
-# Run with sharding (CI)
-npm test -- --shard=1/4 --workers=2
-```
-
----
-
-## Project Structure
-
-```
-speare/
-├── .env.example                # Template for secrets (safe to commit)
-├── .env                        # Actual secrets (DO NOT commit)
-├── framework.config.yaml       # Framework configuration
-├── pages/                      # Page Object definitions (selectors + actions)
-├── data/
-│   └── roles/                  # Role-based test data (admin, customer, guest)
-├── tests/                      # YAML test definitions
-├── suites/                     # Named test collections with ordering
-├── mocks/                      # Network mock responses
-├── shared/
-│   └── custom_steps/           # JavaScript for eval: steps (auditable, versioned)
-├── src/                        # TypeScript framework source (internal)
-└── visual_baselines/           # Baseline screenshots for visual regression
-```
-
----
-
-## Stack
-
-| Component | Purpose |
-|-----------|---------|
-| **Playwright** | Browser automation (Chrome, Firefox, Safari) |
-| **Node.js** | Runtime + CLI |
-| **TypeScript** | Framework internals (compiled to JS) |
-| **YAML** | Test definitions + configuration |
-| **Vitest** | Unit test runner |
-| **Better-sqlite3** | SQLite driver |
-| **pg** | PostgreSQL driver |
-| **mysql2** | MySQL driver |
-| **mssql** | SQL Server driver |
-| **axe-core** | Accessibility testing |
-| **@faker-js/faker** | Test data generation |
-| **js-yaml** | YAML parsing |
-| **jsonpath-plus** | Extract values from API responses + DB results |
-
----
-
-## Architecture
-
-### Three-Layer Execution Model
-
-```
-YAML Config
-    ↓
-Loader (parse YAML, resolve imports)
-    ↓
-Variable Resolver (3-layer: step outputs → test data → ENV)
-    ↓
-Executor Registry (dispatch to UI/API/DB/Assert/Screenshot/A11y/Measure/Eval steps)
-    ↓
-Playwright (browser automation)
-    ↓
-Test Report (JSON, HTML, JUnit, Allure)
-```
-
-### Core Concepts
-
-**Page Objects** (`pages/*.yaml`)
-- Define resilient selectors using Playwright locators: `role`, `text`, `label`, `placeholder`, `testId`, `alt`, `title`
-- Bundle selectors into **actions** (reusable workflows)
-- Example: `LoginPage` → `login` action fills username/password, clicks submit
-
-**Role Data** (`data/roles/*.yaml`)
-- Credentials and context-specific test data (admin, customer, guest)
-- Loaded automatically based on `role:` in test definition
-- Credentials masked in logs
-
-**Variable Resolution** (3 layers, highest to lowest priority)
-1. **Step outputs** — values saved from previous steps (API response, DB query result)
-2. **Test data** — role data + test variables + imports
-3. **Environment** — `.env` (masked in logs)
-
-**Steps** (execution units)
-| Step Type | Purpose |
-|-----------|---------|
-| `ui:` | Click, fill, navigate using page objects |
-| `api:` | HTTP request + assertions (status, JSON path) |
-| `db:` | SQL query + assertions (row count, column value) |
-| `assert:` | Selector visibility, text presence |
-| `mock:` | Network interception (stub API responses) |
-| `screenshot:` | Visual regression baseline/comparison |
-| `a11y:` | Accessibility scan (axe-core) |
-| `measure:` | Performance metrics (LCP, CLS, etc.) |
-| `generate:` | Generate fake data (uuid, faker.internet.email) |
-| `eval:` | Run sandboxed JavaScript (audited, allowlisted) |
-
----
-
-## Key Features
-
-### ✅ Resilient by Default
-- Only Playwright's semantic locators allowed (no brittle CSS/XPath)
-- Page Objects encourage reuse and maintainability
-
-### ✅ Data Separation
-- Secrets live in `.env`, never in YAML
-- Role-based test data kept separate from test logic
-
-### ✅ Full-Stack Testing
-- UI (Playwright)
-- API (fetch, assertions on status/JSON path)
-- Database (readonly isolation, optional transaction rollback)
-- Visual regression (baseline screenshots)
-- Accessibility (axe-core rules)
-- Performance (metrics collection)
-
-### ✅ CI/CD Ready
-- Sharding: `--shard=x/n` for parallel matrix jobs
-- Filtering: tags, suites, individual tests
-- Standard reporters: JSON, HTML, JUnit, Allure
-
-### ✅ AI-Friendly
-- YAML syntax optimized for LLM generation
-- Clear error messages and dry-run previews
-- Deterministic execution
-
-### ✅ Extensible
-- Add custom step types as plugins
-- Eval: step for one-off logic (sandboxed, auditable)
-- Custom reporters
-
----
-
-## CLI Commands
-
-```bash
-# Run tests (default)
-npm test
-
-# Filtering
-npm test -- --tag smoke                    # Tag-based
-npm test -- --exclude slow                 # Exclude tags
-npm test -- --suite regression             # By suite name
-npm test -- --test tests/login.yaml        # Single test
-
-# Execution
-npm test -- --workers 4                    # Parallel workers
-npm test -- --shard=2/4                    # CI sharding (e.g., shard 2 of 4)
-
-# Reporters
-npm test -- --reporter json --reporter html
-
-# Debugging
-npm test -- --dry-run --test tests/login.yaml   # Preview resolved variables
-
-# Validation
-npm run validate                            # Validate all YAML files
-
-# Reports
-npm run merge-reports                       # Merge sharded report artifacts
-```
-
----
-
-## Example Test: Admin Login
-
-**Page Object** (`pages/login.yaml`):
 ```yaml
 name: LoginPage
 url: "/login"
@@ -249,15 +53,18 @@ requires:
 selectors:
   usernameField:
     type: placeholder
-    value: "Email address"
+    value: "Username"
   passwordField:
     type: placeholder
     value: "Password"
-  submitButton:
+  loginButton:
     type: role
     value: button
     options:
-      name: "Sign in"
+      name: "Login"
+  errorMessage:
+    type: role
+    value: alert
 
 actions:
   login:
@@ -268,14 +75,249 @@ actions:
       selector: passwordField
       value: "{password}"
     - action: click
-      selector: submitButton
+      selector: loginButton
+    - action: waitForLoadState
+      state: networkidle
 ```
 
-**Test** (`tests/admin_login.yaml`):
+**Step 2: Create test data** (`data/roles/admin.yaml`)
+
 ```yaml
-name: "Admin login"
-tags: [smoke, ui, critical]
+username: "ENV.ADMIN_USERNAME"
+password: "ENV.ADMIN_PASSWORD"
+fullName: "Admin User"
+email: "admin@qaplayground.com"
+```
+
+**Step 3: Write the test** (`tests/bank_login.yaml`)
+
+```yaml
+name: "Bank Admin Login"
+tags: [smoke, login, bank]
 role: admin
+
+steps:
+  - ui:
+      pageObject: LoginPage
+      action: login
+
+  - assert:
+      selector:
+        type: text
+        value: "Bank"
+      visible: true
+      timeout: 5000
+
+  - screenshot:
+      name: "login_success"
+      fullPage: true
+```
+
+### 4. Run Tests
+
+```bash
+# Run all tests
+npm test
+
+# Run specific test
+npm test -- --test tests/bank_login.yaml
+
+# Preview what will be tested (dry-run - shows resolved variables)
+npm test -- --dry-run --test tests/bank_login.yaml
+
+# Run by tag
+npm test -- --tag login
+
+# Run with multiple workers (parallel)
+npm test -- --workers 4
+```
+
+---
+
+## Complete Real-World Example: Banking App
+
+Let's build a comprehensive test suite for the QA Playground banking application.
+
+### Project Structure
+
+```
+speare/
+├── .env                              # Your secrets (ignored by git)
+├── framework.config.yaml             # Global config
+├── pages/
+│   ├── login.yaml                    # Login page
+│   ├── dashboard.yaml                # Dashboard after login
+│   └── transfer.yaml                 # Money transfer form
+├── data/
+│   └── roles/
+│       ├── admin.yaml               # Admin user
+│       └── customer.yaml            # Regular customer
+├── tests/
+│   ├── bank_login.yaml              # Login happy path
+│   ├── bank_login_error.yaml        # Failed login
+│   ├── bank_transfer.yaml           # Transfer money flow
+│   └── bank_logout.yaml             # Logout
+└── suites/
+    ├── smoke.yaml                   # Quick smoke tests
+    └── full.yaml                    # All tests
+```
+
+### 1. Page Objects
+
+**`pages/login.yaml`** — Login page selectors and actions
+
+```yaml
+name: LoginPage
+url: "/login"
+
+requires:
+  - username
+  - password
+
+selectors:
+  usernameInput:
+    type: placeholder
+    value: "Username"
+  passwordInput:
+    type: placeholder
+    value: "Password"
+  submitButton:
+    type: role
+    value: button
+    options:
+      name: "Login"
+  errorAlert:
+    type: role
+    value: alert
+  loginTitle:
+    type: heading
+    options:
+      level: 1
+
+actions:
+  login:
+    - action: fill
+      selector: usernameInput
+      value: "{username}"
+    - action: fill
+      selector: passwordInput
+      value: "{password}"
+    - action: click
+      selector: submitButton
+    - action: waitForLoadState
+      state: networkidle
+
+  logout:
+    - action: click
+      selector: logoutButton
+```
+
+**`pages/dashboard.yaml`** — Dashboard page (after login)
+
+```yaml
+name: Dashboard
+url: "/dashboard"
+
+selectors:
+  welcomeText:
+    type: text
+    value: "Welcome"
+  accountBalance:
+    type: role
+    value: heading
+    options:
+      name: /Balance/i
+  transferButton:
+    type: role
+    value: button
+    options:
+      name: "Transfer Money"
+  transactionHistory:
+    type: role
+    value: table
+
+actions:
+  viewBalance:
+    - action: textContent
+      selector: accountBalance
+
+  startTransfer:
+    - action: click
+      selector: transferButton
+    - action: waitForLoadState
+      state: networkidle
+```
+
+**`pages/transfer.yaml`** — Money transfer form
+
+```yaml
+name: TransferPage
+url: "/transfer"
+
+requires:
+  - recipient
+  - amount
+
+selectors:
+  recipientInput:
+    type: label
+    value: "Recipient Account"
+  amountInput:
+    type: label
+    value: "Amount"
+  submitButton:
+    type: role
+    value: button
+    options:
+      name: "Confirm Transfer"
+  successMessage:
+    type: role
+    value: status
+
+actions:
+  transferMoney:
+    - action: fill
+      selector: recipientInput
+      value: "{recipient}"
+    - action: fill
+      selector: amountInput
+      value: "{amount}"
+    - action: click
+      selector: submitButton
+    - action: waitForLoadState
+      state: networkidle
+```
+
+### 2. Role Data
+
+**`data/roles/admin.yaml`** — Admin user credentials
+
+```yaml
+username: "ENV.ADMIN_USERNAME"
+password: "ENV.ADMIN_PASSWORD"
+fullName: "Admin User"
+accountNumber: "1000001"
+```
+
+**`data/roles/customer.yaml`** — Regular customer
+
+```yaml
+username: "customer"
+password: "customer123"
+fullName: "John Customer"
+accountNumber: "2000001"
+email: "customer@bank.com"
+```
+
+### 3. Test Cases
+
+**`tests/bank_login.yaml`** — Successful login
+
+```yaml
+name: "Admin Login - Success"
+tags: [smoke, login, bank]
+role: admin
+retry: 1
 
 steps:
   - ui:
@@ -287,23 +329,401 @@ steps:
         type: text
         value: "Welcome"
       visible: true
-
-  - api:
-      method: GET
-      url: "ENV.API_BASE_URL/profile"
-      assert:
-        status: 200
-        jsonPath: "$.role"
-        equals: "admin"
+      timeout: 5000
 
   - screenshot:
       name: "dashboard_after_login"
       fullPage: true
 ```
 
-**Run**:
+**`tests/bank_login_error.yaml`** — Invalid credentials
+
+```yaml
+name: "Login - Invalid Credentials"
+tags: [smoke, login, negative]
+
+variables:
+  badPassword: "wrongpassword"
+
+steps:
+  - ui:
+      pageObject: LoginPage
+      action: login
+      args:
+        password: "{badPassword}"
+
+  - assert:
+      selector:
+        type: role
+        value: alert
+      visible: true
+
+  - assert:
+      selector:
+        type: text
+        value: /Invalid username or password/i
+      visible: true
+```
+
+**`tests/bank_transfer.yaml`** — Complete transfer flow
+
+```yaml
+name: "Transfer Money - Happy Path"
+tags: [functional, transfer, bank]
+role: admin
+
+variables:
+  recipientAccount: "2000001"
+  transferAmount: "100"
+
+steps:
+  # Step 1: Login
+  - ui:
+      pageObject: LoginPage
+      action: login
+
+  - assert:
+      selector:
+        type: text
+        value: "Welcome"
+      visible: true
+
+  # Step 2: Navigate to transfer
+  - ui:
+      pageObject: Dashboard
+      action: startTransfer
+
+  # Step 3: Transfer money
+  - ui:
+      pageObject: TransferPage
+      action: transferMoney
+      args:
+        recipient: "{recipientAccount}"
+        amount: "{transferAmount}"
+
+  # Step 4: Verify success
+  - assert:
+      selector:
+        type: role
+        value: status
+      visible: true
+
+  - assert:
+      selector:
+        type: text
+        value: "Transfer completed"
+      visible: true
+
+  # Step 5: Capture success screenshot
+  - screenshot:
+      name: "transfer_success"
+      fullPage: true
+```
+
+**`tests/bank_transfer_validation.yaml`** — Transfer with data validation
+
+```yaml
+name: "Transfer - Validate Balance Update"
+tags: [functional, transfer, validation]
+role: admin
+
+variables:
+  transferAmount: "50"
+
+steps:
+  # Step 1: Login and get initial balance
+  - ui:
+      pageObject: LoginPage
+      action: login
+
+  # Step 2: Capture balance before transfer
+  - api:
+      method: GET
+      url: "ENV.API_BASE_URL/accounts/getBalance"
+      assert:
+        status: 200
+      save:
+        initialBalance: "$.balance"
+
+  # Step 3: Perform transfer
+  - ui:
+      pageObject: Dashboard
+      action: startTransfer
+
+  - ui:
+      pageObject: TransferPage
+      action: transferMoney
+      args:
+        recipient: "2000001"
+        amount: "{transferAmount}"
+
+  # Step 4: Wait for processing
+  - assert:
+      selector:
+        type: text
+        value: "Transfer completed"
+      visible: true
+
+  # Step 5: Verify new balance
+  - api:
+      method: GET
+      url: "ENV.API_BASE_URL/accounts/getBalance"
+      assert:
+        status: 200
+      save:
+        finalBalance: "$.balance"
+```
+
+### 4. Test Suites
+
+**`suites/smoke.yaml`** — Quick smoke tests
+
+```yaml
+name: "Smoke Tests - Banking"
+config:
+  retries: 1
+  workers: 2
+  timeout: 30000
+
+tests:
+  - path: tests/bank_login.yaml
+    order: 1
+  - path: tests/bank_login_error.yaml
+    order: 2
+```
+
+**`suites/full.yaml`** — Full regression suite
+
+```yaml
+name: "Full Regression - Banking"
+config:
+  retries: 1
+  workers: 4
+
+tests:
+  - path: tests/bank_login.yaml
+    order: 1
+  - path: tests/bank_login_error.yaml
+    order: 2
+  - path: tests/bank_transfer.yaml
+    order: 3
+  - path: tests/bank_transfer_validation.yaml
+    order: 4
+```
+
+### 5. Run the Suite
+
 ```bash
-npm test -- --test tests/admin_login.yaml
+# Run smoke tests only
+npm test -- --suite smoke
+
+# Run full suite
+npm test -- --suite full
+
+# Run specific tag
+npm test -- --tag transfer
+
+# Run with parallel workers
+npm test -- --suite full --workers 4
+
+# Run with sharding (for CI)
+npm test -- --suite full --shard=1/4
+
+# Debug a single test
+npm test -- --dry-run --test tests/bank_transfer.yaml
+```
+
+---
+
+## Advanced Features
+
+### Variables & Data Generation
+
+**Generate test data dynamically:**
+
+```yaml
+steps:
+  - generate:
+      fakeEmail: faker.internet.email
+      fakeAmount: faker.finance.amount
+      transactionId: uuid
+
+  - api:
+      method: POST
+      url: "ENV.API_BASE_URL/transfer"
+      body:
+        recipient: "{recipientEmail}"
+        amount: "{fakeAmount}"
+        transactionId: "{transactionId}"
+      save:
+        responseId: "$.id"
+```
+
+### Multi-Step Workflows with Data Passing
+
+**Test data flows between steps:**
+
+```yaml
+steps:
+  # Step 1: Create account via API
+  - api:
+      method: POST
+      url: "ENV.API_BASE_URL/accounts"
+      body:
+        username: "testuser"
+        email: "test@example.com"
+      save:
+        newAccountId: "$.accountId"
+        authToken: "$.token"
+
+  # Step 2: Use data from Step 1 in UI test
+  - ui:
+      pageObject: AccountPage
+      action: loadAccount
+      args:
+        accountId: "{newAccountId}"
+
+  # Step 3: Verify in database
+  - db:
+      query: "SELECT * FROM accounts WHERE id = {newAccountId}"
+      assert:
+        rowCount: 1
+        column: "status"
+        equals: "active"
+```
+
+### API Testing with Assertions
+
+```yaml
+steps:
+  - api:
+      method: GET
+      url: "ENV.API_BASE_URL/accounts/balance"
+      assert:
+        status: 200
+        jsonPath: "$.balance"
+        equals: 5000
+        # OR for numeric comparison
+        greaterThan: 0
+        lessThan: 100000
+
+  - api:
+      method: POST
+      url: "ENV.API_BASE_URL/transfer"
+      body:
+        from: "account1"
+        to: "account2"
+        amount: 100
+      assert:
+        status: 201
+        jsonPath: "$.status"
+        equals: "pending"
+      save:
+        transactionId: "$.id"
+```
+
+### Database Validation
+
+```yaml
+database:
+  driver: postgres
+  connectionString: "ENV.DB_URL"
+  isolationMode: readonly  # readonly | transaction | none
+
+steps:
+  - db:
+      query: "SELECT COUNT(*) as count FROM transactions WHERE status = 'pending'"
+      assert:
+        rowCount: 1
+        column: "count"
+        equals: 5
+      save:
+        pendingCount: "$..[0].count"
+
+  - db:
+      query: "SELECT * FROM users WHERE email = {email}"
+      assert:
+        rowCount: 1
+      save:
+        userId: "$..[0].id"
+```
+
+### Visual Regression Testing
+
+```yaml
+steps:
+  # Capture baseline
+  - screenshot:
+      name: "homepage"
+      fullPage: true
+      update: false  # Set to true first to create baseline
+
+  # Or compare against baseline
+  - screenshot:
+      name: "homepage"
+      threshold: 0.01  # 1% difference allowed
+      fullPage: true
+```
+
+### Accessibility Testing
+
+```yaml
+steps:
+  - a11y:
+      run: true
+      severity: [critical, serious]
+      include:
+        - button
+        - input
+        - form
+      exclude:
+        - ".legacy-component"
+
+  # Fails if critical or serious a11y violations found
+```
+
+### Performance Monitoring
+
+```yaml
+steps:
+  - measure:
+      label: "homepage_load"
+      metrics:
+        - loadTime
+        - largestContentfulPaint
+        - firstContentfulPaint
+        - cumulativeLayoutShift
+      thresholds:
+        loadTime: 3000
+        largestContentfulPaint: 2500
+        cumulativeLayoutShift: 0.1
+```
+
+### Network Mocking
+
+```yaml
+steps:
+  # Mock API response
+  - mock:
+      url: "**/api/accounts/balance"
+      method: GET
+      response:
+        status: 200
+        body:
+          balance: 99999
+          currency: "USD"
+
+  # UI test will see mocked response
+  - ui:
+      pageObject: Dashboard
+      action: viewBalance
+
+  # Assert shows mocked data
+  - assert:
+      selector:
+        type: text
+        value: "99999"
+      visible: true
 ```
 
 ---
@@ -321,13 +741,17 @@ apiBaseUrl: "ENV.API_BASE_URL"
 retries: 1
 timeout: 30000
 
+# Parallel execution
 parallel:
   workers: 2
+  shardCount: 4
 
 # Database (optional)
 database:
   driver: postgres
   connectionString: "ENV.DB_URL"
+  ssl: false
+  queryTimeout: 5000
   isolationMode: readonly  # readonly | transaction | none
 
 # Visual regression
@@ -339,23 +763,53 @@ visual:
 reporters:
   - html
   - json
+  - junit
+
+# Security
+security:
+  allowEval: false
 ```
 
-### Per-Suite Config (`suites/smoke.yaml`)
+---
 
-```yaml
-name: "Smoke Suite"
+## CLI Commands
 
-config:
-  retries: 0
-  workers: 4
-  timeout: 20000
+```bash
+# Run all tests
+npm test
 
-tests:
-  - path: tests/health_check.yaml
-    order: 1
-  - path: tests/login.yaml
-    order: 2
+# Filter by tag (repeatable)
+npm test -- --tag smoke
+npm test -- --tag smoke --tag ui
+
+# Exclude tags
+npm test -- --exclude slow
+
+# Run specific suite
+npm test -- --suite smoke
+npm test -- --suite regression
+
+# Run single test
+npm test -- --test tests/bank_login.yaml
+
+# Dry-run (preview variables without executing)
+npm test -- --dry-run --test tests/bank_transfer.yaml
+
+# Parallel execution
+npm test -- --workers 4
+
+# Sharding (for CI matrix jobs)
+npm test -- --shard=1/4  # Shard 1 of 4
+npm test -- --shard=2/4  # Shard 2 of 4
+
+# Reporters
+npm test -- --reporter json --reporter html
+
+# Validate YAML files
+npm run validate
+
+# Merge sharded reports
+npm run merge-reports
 ```
 
 ---
@@ -366,6 +820,7 @@ tests:
 
 ```yaml
 name: E2E Tests
+
 on: [push, pull_request]
 
 jobs:
@@ -374,30 +829,42 @@ jobs:
       matrix:
         shard: [1, 2, 3, 4]
     runs-on: ubuntu-latest
+
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: '20'
+
       - run: npm ci
       - run: npx playwright install --with-deps
-      - run: npm test -- --shard=${{ matrix.shard }}/4 --reporter=json
+
+      - name: Run tests (shard ${{ matrix.shard }}/4)
+        run: npm test -- --shard=${{ matrix.shard }}/4 --reporter=json
+
       - uses: actions/upload-artifact@v4
+        if: always()
         with:
           name: report-shard-${{ matrix.shard }}
           path: reports/
 
   merge-reports:
+    if: always()
     needs: test
     runs-on: ubuntu-latest
+
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
+
       - uses: actions/download-artifact@v4
         with:
           pattern: report-shard-*
           merge-multiple: true
+          path: reports/
+
       - run: npm run merge-reports
+
       - uses: actions/upload-artifact@v4
         with:
           name: merged-report
@@ -406,36 +873,85 @@ jobs:
 
 ---
 
-## Security
-
-- **Secrets**: Always use `.env`, referenced via `ENV.KEY` (masked in logs)
-- **Database**: Isolation modes protect against state leakage (`readonly` mode for parallel tests)
-- **eval: step**: Sandboxed JavaScript, requires explicit `allowEval: true` config
-- **Network**: Mocks are scoped to test execution, cleaned up automatically
-
----
-
 ## Troubleshooting
 
 | Problem | Solution |
 |---------|----------|
-| `Unresolved placeholder "{userId}"` | Add `save:` to previous API/db step, or define in test variables |
-| `ENOENT: no such file or directory` (page not found) | Verify page name matches YAML filename, selector names match |
-| Test times out | Increase `timeout:` in framework.config.yaml or individual test |
-| Selector not found | Check selector type + value match your app; use `--dry-run` to preview |
-| DB connection refused | Verify `DB_URL` in `.env`, database is running |
+| `Unresolved placeholder "{userId}"` | Add `save:` to previous API/db step that returns this value |
+| `Selector not found` | Check selector type/value match your app; use `--dry-run` to debug |
+| Test times out | Increase `timeout:` in test or `framework.config.yaml` |
+| `Authentication failed for GitHub` | Use Personal Access Token instead of password |
+| DB readonly error | Ensure you're not trying to INSERT/UPDATE in `isolation: readonly` mode |
+| Unable to find page | Check `url:` in page object matches target; verify `BASE_URL` in `.env` |
 
 ---
 
-## What's Next
+## Project Structure Best Practices
 
-- Read [DOCUMENTS.md](DOCUMENTS.md) for detailed codebase walkthrough
-- Check `tests/`, `pages/`, `suites/` for examples
-- See RFD v1.2 spec document for design rationale
+```
+tests/
+├── smoke/                # Quick sanity checks (5-10 min)
+│   ├── login.yaml
+│   └── logout.yaml
+├── functional/           # Feature tests (30-60 min)
+│   ├── transfer.yaml
+│   ├── payment.yaml
+│   └── account_management.yaml
+├── regression/           # Full coverage (1-2 hours)
+│   ├── edge_cases.yaml
+│   └── error_handling.yaml
+
+pages/
+├── auth/                 # Authentication pages
+│   ├── login.yaml
+│   └── password_reset.yaml
+├── account/              # Account management
+│   ├── profile.yaml
+│   ├── settings.yaml
+│   └── accounts_list.yaml
+└── transactions/         # Transaction pages
+    ├── transfer.yaml
+    └── payment.yaml
+
+data/
+├── roles/
+│   ├── admin.yaml
+│   ├── customer.yaml
+│   ├── customer_vip.yaml
+│   └── guest.yaml
+└── fixtures/
+    ├── valid_emails.yaml
+    ├── invalid_emails.yaml
+    └── test_accounts.yaml
+
+suites/
+├── smoke.yaml            # smoke/ tests only
+├── full.yaml             # All tests
+├── regression.yaml       # regression/ tests only
+└── pre_deploy.yaml       # Critical tests before deploy
+```
 
 ---
 
-## License
+## Next Steps
 
-Apache 2.0 (or specify your license)  
-Designed for AI-generated applications and non-JS test authors.
+1. **Review [DOCUMENTS.md](DOCUMENTS.md)** — Complete codebase documentation
+2. **Explore examples** — Check `tests/`, `pages/`, `suites/` directories
+3. **Run tests** — `npm test -- --suite smoke`
+4. **Customize pages** — Add your own page objects in `pages/`
+5. **Build test suites** — Organize by feature in `tests/`
+
+---
+
+## Resources
+
+- **RFD v1.2** — Full specification and design document
+- **Playwright Docs** — https://playwright.dev
+- **Locators** — https://playwright.dev/docs/locators
+- **QA Playground** — https://www.qaplayground.com/bank (example site)
+
+---
+
+**Version:** v0.1.0  
+**Last Updated:** 2026-04-13  
+**License:** Apache 2.0
