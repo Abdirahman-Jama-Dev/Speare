@@ -1,0 +1,51 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "speare/page-object",
+  "title": "PageObject",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["name", "selectors", "actions"],
+  "properties": {
+    "name": { "type": "string", "minLength": 1 },
+    "url": { "type": "string" },
+    "requires": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "selectors": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["type", "value"],
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": ["role", "text", "label", "placeholder", "testId", "alt", "title"]
+          },
+          "value": { "type": "string", "minLength": 1 },
+          "options": { "type": "object" }
+        }
+      }
+    },
+    "actions": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["action", "selector"],
+          "properties": {
+            "action": {
+              "type": "string",
+              "enum": ["fill", "click", "select", "check", "uncheck", "hover", "press"]
+            },
+            "selector": { "type": "string", "minLength": 1 },
+            "value": { "type": "string" }
+          }
+        }
+      }
+    }
+  }
+}

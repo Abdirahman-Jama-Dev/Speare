@@ -1,0 +1,13 @@
+url: "**/api/products"
+method: GET
+response:
+  status: 200
+  body:
+    - id: "prod_001"
+      name: "Mocked Widget"
+      price: 29.99
+      inStock: true
+    - id: "prod_002"
+      name: "Another Widget"
+      price: 14.99
+      inStock: false

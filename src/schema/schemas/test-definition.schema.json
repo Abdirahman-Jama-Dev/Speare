@@ -1,0 +1,312 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "speare/test-definition",
+  "title": "TestDefinition",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["name", "steps"],
+  "definitions": {
+    "selectorInline": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type", "value"],
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": ["role", "text", "label", "placeholder", "testId", "alt", "title"]
+        },
+        "value": { "type": "string", "minLength": 1 },
+        "options": { "type": "object" }
+      }
+    },
+    "retryProps": {
+      "retry": { "type": "integer", "minimum": 0 },
+      "retryDelay": { "type": "integer", "minimum": 0 }
+    },
+    "apiStepConfig": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["method", "url"],
+      "properties": {
+        "method": { "type": "string", "enum": ["GET", "POST", "PUT", "PATCH", "DELETE"] },
+        "url": { "type": "string", "minLength": 1 },
+        "headers": { "type": "object", "additionalProperties": { "type": "string" } },
+        "body": {},
+        "assert": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "status": { "type": "integer" },
+            "jsonPath": { "type": "string" },
+            "equals": {},
+            "contains": {}
+          }
+        },
+        "save": { "type": "object", "additionalProperties": { "type": "string" } }
+      }
+    },
+    "uiStep": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["ui"],
+      "properties": {
+        "retry": { "type": "integer", "minimum": 0 },
+        "retryDelay": { "type": "integer", "minimum": 0 },
+        "ui": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["pageObject", "action"],
+          "properties": {
+            "pageObject": { "type": "string", "minLength": 1 },
+            "action": { "type": "string", "minLength": 1 },
+            "args": { "type": "object", "additionalProperties": { "type": "string" } }
+          }
+        }
+      }
+    },
+    "apiStep": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["api"],
+      "properties": {
+        "retry": { "type": "integer", "minimum": 0 },
+        "retryDelay": { "type": "integer", "minimum": 0 },
+        "api": { "$ref": "#/definitions/apiStepConfig" }
+      }
+    },
+    "assertStep": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["assert"],
+      "properties": {
+        "retry": { "type": "integer", "minimum": 0 },
+        "retryDelay": { "type": "integer", "minimum": 0 },
+        "assert": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["selector"],
+          "properties": {
+            "selector": { "$ref": "#/definitions/selectorInline" },
+            "visible": { "type": "boolean" },
+            "text": { "type": "string" },
+            "value": { "type": "string" },
+            "count": { "type": "integer", "minimum": 0 },
+            "enabled": { "type": "boolean" },
+            "checked": { "type": "boolean" }
+          }
+        }
+      }
+    },
+    "mockStep": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["mock"],
+      "properties": {
+        "retry": { "type": "integer", "minimum": 0 },
+        "retryDelay": { "type": "integer", "minimum": 0 },
+        "mock": {
+          "oneOf": [
+            { "type": "string", "minLength": 1 },
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["url", "response"],
+              "properties": {
+                "url": { "type": "string", "minLength": 1 },
+                "method": { "type": "string", "enum": ["GET", "POST", "PUT", "PATCH", "DELETE"] },
+                "response": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": ["status"],
+                  "properties": {
+                    "status": { "type": "integer", "minimum": 100, "maximum": 599 },
+                    "body": {},
+                    "headers": { "type": "object", "additionalProperties": { "type": "string" } }
+                  }
+                }
+              }
+            }
+          ]
+        }
+      }
+    },
+    "generateStep": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["generate"],
+      "properties": {
+        "retry": { "type": "integer", "minimum": 0 },
+        "retryDelay": { "type": "integer", "minimum": 0 },
+        "generate": {
+          "type": "object",
+          "additionalProperties": { "type": "string" },
+          "minProperties": 1
+        }
+      }
+    },
+    "screenshotStep": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["screenshot"],
+      "properties": {
+        "retry": { "type": "integer", "minimum": 0 },
+        "retryDelay": { "type": "integer", "minimum": 0 },
+        "screenshot": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["name"],
+          "properties": {
+            "name": { "type": "string", "minLength": 1 },
+            "fullPage": { "type": "boolean" },
+            "threshold": { "type": "number", "minimum": 0, "maximum": 1 }
+          }
+        }
+      }
+    },
+    "a11yStep": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["a11y"],
+      "properties": {
+        "retry": { "type": "integer", "minimum": 0 },
+        "retryDelay": { "type": "integer", "minimum": 0 },
+        "a11y": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["run"],
+          "properties": {
+            "run": { "type": "boolean" },
+            "severity": {
+              "type": "array",
+              "items": { "type": "string", "enum": ["critical", "serious", "moderate", "minor"] }
+            },
+            "include": { "type": "array", "items": { "type": "string" } },
+            "exclude": { "type": "array", "items": { "type": "string" } }
+          }
+        }
+      }
+    },
+    "measureStep": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["measure"],
+      "properties": {
+        "retry": { "type": "integer", "minimum": 0 },
+        "retryDelay": { "type": "integer", "minimum": 0 },
+        "measure": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["label", "metrics"],
+          "properties": {
+            "label": { "type": "string", "minLength": 1 },
+            "metrics": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": ["loadTime", "largestContentfulPaint", "cumulativeLayoutShift", "firstContentfulPaint", "timeToInteractive"]
+              }
+            },
+            "thresholds": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "loadTime": { "type": "number", "minimum": 0 },
+                "largestContentfulPaint": { "type": "number", "minimum": 0 },
+                "cumulativeLayoutShift": { "type": "number", "minimum": 0 },
+                "firstContentfulPaint": { "type": "number", "minimum": 0 },
+                "timeToInteractive": { "type": "number", "minimum": 0 }
+              }
+            }
+          }
+        }
+      }
+    },
+    "dbStep": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["db"],
+      "properties": {
+        "retry": { "type": "integer", "minimum": 0 },
+        "retryDelay": { "type": "integer", "minimum": 0 },
+        "db": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["query"],
+          "properties": {
+            "query": { "type": "string", "minLength": 1 },
+            "assert": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "rowCount": { "type": "integer", "minimum": 0 },
+                "column": { "type": "string" },
+                "equals": {}
+              }
+            },
+            "save": { "type": "object", "additionalProperties": { "type": "string" } }
+          }
+        }
+      }
+    },
+    "evalStep": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["eval"],
+      "properties": {
+        "retry": { "type": "integer", "minimum": 0 },
+        "retryDelay": { "type": "integer", "minimum": 0 },
+        "eval": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["script"],
+          "properties": {
+            "script": { "type": "string", "minLength": 1 },
+            "input": { "type": "object", "additionalProperties": { "type": "string" } },
+            "output": { "type": "string" }
+          }
+        }
+      }
+    }
+  },
+  "properties": {
+    "name": { "type": "string", "minLength": 1 },
+    "tags": { "type": "array", "items": { "type": "string" }, "uniqueItems": true },
+    "role": { "type": "string" },
+    "retry": { "type": "integer", "minimum": 0 },
+    "data": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "variables": { "type": "object" },
+    "hooks": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "beforeAll": { "type": "array", "items": { "oneOf": [{ "$ref": "#/definitions/apiStep" }, { "$ref": "#/definitions/dbStep" }] } },
+        "afterAll": { "type": "array", "items": { "oneOf": [{ "$ref": "#/definitions/apiStep" }, { "$ref": "#/definitions/dbStep" }] } },
+        "beforeEach": { "type": "array", "items": { "oneOf": [{ "$ref": "#/definitions/apiStep" }, { "$ref": "#/definitions/dbStep" }] } },
+        "afterEach": { "type": "array", "items": { "oneOf": [{ "$ref": "#/definitions/apiStep" }, { "$ref": "#/definitions/dbStep" }] } }
+      }
+    },
+    "steps": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "oneOf": [
+          { "$ref": "#/definitions/uiStep" },
+          { "$ref": "#/definitions/apiStep" },
+          { "$ref": "#/definitions/assertStep" },
+          { "$ref": "#/definitions/mockStep" },
+          { "$ref": "#/definitions/generateStep" },
+          { "$ref": "#/definitions/screenshotStep" },
+          { "$ref": "#/definitions/a11yStep" },
+          { "$ref": "#/definitions/measureStep" },
+          { "$ref": "#/definitions/dbStep" },
+          { "$ref": "#/definitions/evalStep" }
+        ]
+      }
+    }
+  }
+}

@@ -1,0 +1,9 @@
+node_modules/
+dist/
+reports/
+visual_baselines/
+.env
+*.env
+coverage/
+.DS_Store
+*.log

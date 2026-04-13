@@ -1,0 +1,44 @@
+name: "Admin login"
+tags: [smoke, ui, critical]
+role: admin
+retry: 1
+
+hooks:
+  beforeAll:
+    - api:
+        method: POST
+        url: "ENV.API_BASE_URL/test/reset"
+        body: {}
+
+  afterEach:
+    - api:
+        method: DELETE
+        url: "ENV.API_BASE_URL/test/sessions"
+
+steps:
+  - ui:
+      pageObject: LoginPage
+      action: login
+
+  - assert:
+      selector:
+        type: text
+        value: "Welcome"
+      visible: true
+
+  - api:
+      method: GET
+      url: "ENV.API_BASE_URL/profile"
+      assert:
+        status: 200
+        jsonPath: "$.role"
+        equals: "admin"
+
+  - screenshot:
+      name: "dashboard_after_login"
+      fullPage: true
+      threshold: 0.01
+
+  - a11y:
+      run: true
+      severity: [critical, serious]

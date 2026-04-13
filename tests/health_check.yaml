@@ -1,0 +1,11 @@
+name: "Health check"
+tags: [smoke, api]
+
+steps:
+  - api:
+      method: GET
+      url: "ENV.API_BASE_URL/health"
+      assert:
+        status: 200
+        jsonPath: "$.status"
+        equals: "ok"

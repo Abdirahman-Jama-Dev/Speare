@@ -1,0 +1,50 @@
+name: "Checkout flow"
+tags: [regression, ui, e2e]
+role: customer
+retry: 2
+
+variables:
+  expectedTotal: "29.99"
+
+hooks:
+  beforeAll:
+    - api:
+        method: POST
+        url: "ENV.API_BASE_URL/test/reset"
+        body: {}
+
+steps:
+  - generate:
+      sessionId: uuid
+      testEmail: faker.internet.email
+
+  - api:
+      method: POST
+      url: "ENV.API_BASE_URL/cart/add"
+      body:
+        productId: "prod_001"
+        quantity: 1
+      assert:
+        status: 200
+      save:
+        cartId: "$.cartId"
+
+  - ui:
+      pageObject: LoginPage
+      action: login
+
+  - assert:
+      selector:
+        type: role
+        value: link
+        options:
+          name: "Checkout"
+      visible: true
+      enabled: true
+
+  - measure:
+      label: "checkout_page_load"
+      metrics: [loadTime, largestContentfulPaint]
+      thresholds:
+        loadTime: 3000
+        largestContentfulPaint: 2500

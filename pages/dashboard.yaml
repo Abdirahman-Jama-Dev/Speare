@@ -1,0 +1,24 @@
+name: DashboardPage
+url: "/dashboard"
+
+selectors:
+  welcomeMessage:
+    type: text
+    value: "Welcome"
+  userMenuButton:
+    type: role
+    value: button
+    options:
+      name: "User menu"
+  logoutItem:
+    type: role
+    value: menuitem
+    options:
+      name: "Sign out"
+
+actions:
+  logout:
+    - action: click
+      selector: userMenuButton
+    - action: click
+      selector: logoutItem

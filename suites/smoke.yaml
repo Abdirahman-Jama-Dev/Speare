@@ -1,0 +1,10 @@
+name: "Smoke Suite"
+config:
+  retries: 0
+  workers: 2
+
+tests:
+  - path: tests/health_check.yaml
+    order: 1
+  - path: tests/admin_login.yaml
+    order: 2

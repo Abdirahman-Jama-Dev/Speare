@@ -1,0 +1,7 @@
+name: "Multi-env Smoke"
+matrix:
+  env: [staging, production]
+
+tests:
+  - tests/health_check.yaml
+  - tests/admin_login.yaml

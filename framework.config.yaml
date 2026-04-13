@@ -1,0 +1,35 @@
+# =============================================================================
+# framework.config.yaml — Global Playwright test framework configuration
+# =============================================================================
+
+baseUrl: "ENV.BASE_URL"
+apiBaseUrl: "ENV.API_BASE_URL"
+
+# Default retry count for all tests (can be overridden per-test or per-suite)
+retries: 1
+
+# Default step timeout in milliseconds
+timeout: 30000
+
+parallel:
+  workers: 2
+
+# Uncomment to enable database steps
+# database:
+#   driver: postgres
+#   connectionString: "ENV.DB_URL"
+#   ssl: false
+#   queryTimeout: 5000
+#   isolationMode: readonly   # readonly | transaction | none
+
+security:
+  # Set to true only in trusted environments — see docs on eval: steps
+  allowEval: false
+
+visual:
+  threshold: 0.01
+  baselineDir: visual_baselines
+
+reporters:
+  - html
+  - json

@@ -1,0 +1,12 @@
+name: "Regression Suite"
+config:
+  retries: 1
+  workers: 4
+
+tests:
+  - path: tests/health_check.yaml
+    order: 1
+  - path: tests/admin_login.yaml
+    order: 2
+  - path: tests/checkout_flow.yaml
+    order: 3

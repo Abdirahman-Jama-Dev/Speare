@@ -1,0 +1,4 @@
+username: "ENV.CUSTOMER_USERNAME"
+password: "ENV.CUSTOMER_PASSWORD"
+displayName: "Test Customer"
+role: "customer"

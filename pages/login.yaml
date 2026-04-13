@@ -1,0 +1,33 @@
+name: LoginPage
+url: "/login"
+
+requires:
+  - username
+  - password
+
+selectors:
+  usernameField:
+    type: placeholder
+    value: "Email address"
+  passwordField:
+    type: placeholder
+    value: "Password"
+  submitButton:
+    type: role
+    value: button
+    options:
+      name: "Sign in"
+  errorMessage:
+    type: role
+    value: alert
+
+actions:
+  login:
+    - action: fill
+      selector: usernameField
+      value: "{username}"
+    - action: fill
+      selector: passwordField
+      value: "{password}"
+    - action: click
+      selector: submitButton

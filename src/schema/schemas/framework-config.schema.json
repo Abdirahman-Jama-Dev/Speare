@@ -1,0 +1,54 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "speare/framework-config",
+  "title": "FrameworkConfig",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "baseUrl": { "type": "string" },
+    "apiBaseUrl": { "type": "string" },
+    "retries": { "type": "integer", "minimum": 0 },
+    "timeout": { "type": "integer", "minimum": 0 },
+    "parallel": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "shard": { "type": "boolean" },
+        "shardCount": { "type": "integer", "minimum": 1 },
+        "workers": { "type": "integer", "minimum": 1 }
+      }
+    },
+    "database": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["driver", "connectionString"],
+      "properties": {
+        "driver": { "type": "string", "enum": ["postgres", "mysql", "sqlite", "mssql"] },
+        "connectionString": { "type": "string" },
+        "ssl": { "type": "boolean" },
+        "queryTimeout": { "type": "integer", "minimum": 0 },
+        "isolationMode": { "type": "string", "enum": ["readonly", "transaction", "none"] }
+      }
+    },
+    "security": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "allowEval": { "type": "boolean" }
+      }
+    },
+    "visual": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "threshold": { "type": "number", "minimum": 0, "maximum": 1 },
+        "baselineDir": { "type": "string" }
+      }
+    },
+    "reporters": {
+      "type": "array",
+      "items": { "type": "string", "enum": ["json", "junit", "html", "allure"] },
+      "uniqueItems": true
+    }
+  }
+}
