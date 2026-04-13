@@ -134,6 +134,41 @@ npm test -- --workers 4
 
 ---
 
+## Using Speare in Your Own Project
+
+Instead of writing tests inside the Speare directory, you can use Speare as a dependency in your own project:
+
+### Setup
+
+1. **Install Speare** (via npm when published, or clone locally)
+2. **Create your project structure:**
+```
+your-project/
+├── .env
+├── framework.config.yaml
+├── pages/
+│   └── login.yaml
+├── tests/
+│   └── my_test.yaml
+└── data/
+    └── roles/
+        └── user.yaml
+```
+
+3. **Run tests from your project directory:**
+```bash
+npm test
+```
+
+Speare automatically detects `framework.config.yaml` in your project and uses that as the root. No need to copy files into the Speare directory.
+
+**Alternatively**, set the project root explicitly:
+```bash
+SPEARE_ROOT=/path/to/your/project npm test
+```
+
+---
+
 ## Performance & Overhead
 
 **Speare has minimal overhead.** YAML files are parsed once at startup (~milliseconds), then interpreted at runtime with negligible dispatch overhead. Test execution time is dominated by Playwright automation (browser interactions, network requests), not by the framework. In practice, Speare tests run at nearly identical speeds to equivalent raw Playwright tests—there's no incentive to bypass the framework for performance reasons.

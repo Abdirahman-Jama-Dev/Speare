@@ -15,16 +15,41 @@ import { Command, Option } from 'commander';
 import { spawnSync } from 'child_process';
 import * as path from 'path';
 import * as url from 'url';
+import * as fs from 'fs';
 import { runDryRun } from './dry-run.js';
 import { runValidate } from './validate.js';
 import { mergeReports } from './merge-reports.js';
 import type { RunConfig } from '../types/index.js';
 
-// ─── Project Root ─────────────────────────────────────────────────────────────
+// ─── Project Root Detection ───────────────────────────────────────────────────
 
 const __dirname = url.fileURLToPath(new URL('.', import.meta.url));
-// dist/cli/ → project root (two levels up from compiled output)
-const PROJECT_ROOT = path.resolve(__dirname, '..', '..');
+const frameworkRoot = path.resolve(__dirname, '..', '..');
+
+/**
+ * Detect project root dynamically.
+ * Priority:
+ * 1. SPEARE_ROOT environment variable
+ * 2. Current working directory (if it contains framework.config.yaml)
+ * 3. Framework directory (when used as installed dependency)
+ */
+function detectProjectRoot(): string {
+  // Check environment variable first
+  if (process.env.SPEARE_ROOT) {
+    return process.env.SPEARE_ROOT;
+  }
+
+  // Check current working directory for framework.config.yaml
+  const cwdConfig = path.join(process.cwd(), 'framework.config.yaml');
+  if (fs.existsSync(cwdConfig)) {
+    return process.cwd();
+  }
+
+  // Fall back to framework root
+  return frameworkRoot;
+}
+
+const PROJECT_ROOT = detectProjectRoot();
 
 // ─── CLI Definition ───────────────────────────────────────────────────────────
 
