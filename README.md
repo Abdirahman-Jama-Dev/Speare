@@ -134,6 +134,12 @@ npm test -- --workers 4
 
 ---
 
+## Performance & Overhead
+
+**Speare has minimal overhead.** YAML files are parsed once at startup (~milliseconds), then interpreted at runtime with negligible dispatch overhead. Test execution time is dominated by Playwright automation (browser interactions, network requests), not by the framework. In practice, Speare tests run at nearly identical speeds to equivalent raw Playwright tests—there's no incentive to bypass the framework for performance reasons.
+
+---
+
 ## Complete Real-World Example: Banking App
 
 Let's build a comprehensive test suite for the QA Playground banking application.
@@ -890,14 +896,14 @@ jobs:
 
 ```
 tests/
-├── smoke/                # Quick sanity checks (5-10 min)
+├── smoke/                # Quick sanity checks
 │   ├── login.yaml
 │   └── logout.yaml
-├── functional/           # Feature tests (30-60 min)
+├── functional/           # Feature tests
 │   ├── transfer.yaml
 │   ├── payment.yaml
 │   └── account_management.yaml
-├── regression/           # Full coverage (1-2 hours)
+├── regression/           # Full coverage
 │   ├── edge_cases.yaml
 │   └── error_handling.yaml
 
