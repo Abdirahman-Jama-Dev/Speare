@@ -3,9 +3,6 @@ import { loadConfig } from '../config/index.js';
 import {
   discoverTests,
   loadPageObjectRegistry,
-  loadSuiteDefinition,
-  expandMatrixSuite,
-  loadTestDefinition,
   resolveDataImports,
 } from '../loader/index.js';
 import { loadRoleData } from '../loader/index.js';
@@ -31,7 +28,7 @@ export async function runDryRun(runConfig: RunConfig): Promise<void> {
     projectRoot,
     tags: runConfig.tags,
     excludeTags: runConfig.excludeTags,
-    singleFile: runConfig.testFile ?? undefined,
+    ...(runConfig.testFile ? { singleFile: runConfig.testFile } : {}),
   });
 
   if (tests.length === 0) {

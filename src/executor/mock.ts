@@ -26,10 +26,8 @@ export class MockExecutor implements StepExecutor<MockStep> {
       await route.fulfill({
         status: resolvedDef.response.status,
         contentType: 'application/json',
-        headers: resolvedDef.response.headers,
-        body: resolvedDef.response.body !== undefined
-          ? JSON.stringify(resolvedDef.response.body)
-          : undefined,
+        ...(resolvedDef.response.headers && { headers: resolvedDef.response.headers }),
+        ...(resolvedDef.response.body !== undefined && { body: JSON.stringify(resolvedDef.response.body) }),
       });
     });
 

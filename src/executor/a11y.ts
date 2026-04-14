@@ -1,15 +1,14 @@
 import type { A11yStep, StepExecutor, RuntimeContext } from '../types/index.js';
 
 async function runAxe(ctx: RuntimeContext, config: A11yStep['a11y']): Promise<void> {
-  const { checkAccessibility } = await import('@axe-core/playwright');
-  const result = await checkAccessibility(ctx.page, {
-    includedImpacts: config.severity as Array<'critical' | 'serious' | 'moderate' | 'minor'> | undefined,
-    detailedReport: true,
-  });
+  const { AxeBuilder } = await import('@axe-core/playwright');
+  const result = await new AxeBuilder({ page: ctx.page })
+    .include('button, input, form')
+    .analyze();
 
   const violations = result.violations.filter((v) => {
     if (!config.severity || config.severity.length === 0) return true;
-    return config.severity.includes(v.impact as 'critical' | 'serious' | 'moderate' | 'minor');
+    return v.impact && config.severity.includes(v.impact as 'critical' | 'serious' | 'moderate' | 'minor');
   });
 
   if (violations.length > 0) {

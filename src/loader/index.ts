@@ -135,7 +135,7 @@ export function resolveDataImports(
 
   for (const entry of definition.data ?? []) {
     if ('import' in entry) {
-      const filePath = resolveFromRoot(projectRoot, entry.import);
+      const filePath = resolveFromRoot(projectRoot, entry.import as string);
       const parsed = parseYamlFile(filePath);
       if (typeof parsed === 'object' && parsed !== null) {
         Object.assign(merged, parsed);

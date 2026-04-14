@@ -111,7 +111,7 @@ async function buildMssqlDriver(connectionString: string): Promise<DbDriver> {
   return {
     async query(sql, timeout) {
       const request = pool.request();
-      request.timeout = timeout;
+      (request as any).timeout = timeout;
       const result = await request.query(sql);
       return result.recordset as DbRow[];
     },
