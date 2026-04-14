@@ -16,7 +16,7 @@ export class ConcreteExecutionContext implements ExecutionContext {
     };
   }
 
-  private get layers(): ResolutionLayers {
+  protected get layers(): ResolutionLayers {
     return {
       env: this.resolution.env,
       testData: this.resolution.testData,

@@ -2,6 +2,7 @@ import Ajv from 'ajv';
 import addFormats from 'ajv-formats';
 import { createRequire } from 'module';
 import type { FrameworkConfig, PageObjectDefinition, RoleData, MockDefinition, SuiteDefinition, TestDefinition } from '../types/index.js';
+import type { ErrorObject } from 'ajv';
 
 const require = createRequire(import.meta.url);
 
@@ -47,8 +48,10 @@ export class YamlValidationError extends Error {
 
 // ─── Validator ─────────────────────────────────────────────────────────────────
 
-function buildAjv(): Ajv {
+function buildAjv() {
+  // @ts-ignore - ajv types are problematic, but runtime works fine
   const ajv = new Ajv({ allErrors: true, strict: true });
+  // @ts-ignore
   addFormats(ajv);
 
   const schemas: SchemaName[] = [
@@ -84,7 +87,7 @@ export function validate<K extends SchemaName>(
 ): SchemaTypeMap[K] {
   const valid = ajv.validate(`speare/${schemaName}`, data);
   if (!valid) {
-    const errors: SchemaValidationError[] = (ajv.errors ?? []).map((e) => ({
+    const errors: SchemaValidationError[] = ((ajv.errors as ErrorObject[] | null) ?? []).map((e: ErrorObject) => ({
       path: e.instancePath,
       message: e.message ?? 'unknown error',
     }));

@@ -1,6 +1,7 @@
 import type { Page, BrowserContext, APIRequestContext } from 'playwright';
 import type { FrameworkConfig, PageObjectDefinition } from './config.js';
 import type { DbQueryRunner } from './db.js';
+import type { ResolutionLayers } from '../resolver/placeholder-resolver.js';
 
 /**
  * Immutable resolved context passed through the execution pipeline.
@@ -32,5 +33,6 @@ export interface RuntimeContext extends ExecutionContext {
   readonly projectRoot: string;
   readonly testName: string;
   readonly dbConnection: DbQueryRunner | null;
+  readonly layers: ResolutionLayers;
   save(key: string, value: unknown): RuntimeContext;
 }

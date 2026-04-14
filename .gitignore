@@ -7,3 +7,4 @@ visual_baselines/
 coverage/
 .DS_Store
 *.log
+.claude

@@ -24,6 +24,11 @@ export class ConcreteRuntimeContext extends ConcreteExecutionContext implements 
   readonly testName: string;
   readonly dbConnection: DbQueryRunner | null;
 
+  // Expose parent's protected layers getter as public for RuntimeContext interface
+  override get layers(): ResolutionLayers {
+    return super.layers;
+  }
+
   constructor(
     config: FrameworkConfig,
     layers: ResolutionLayers,

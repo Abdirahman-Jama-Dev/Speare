@@ -76,8 +76,6 @@ actions:
       value: "{password}"
     - action: click
       selector: loginButton
-    - action: waitForLoadState
-      state: networkidle
 ```
 
 **Step 2: Create test data** (`data/roles/admin.yaml`)
@@ -106,7 +104,6 @@ steps:
         type: text
         value: "Bank"
       visible: true
-      timeout: 5000
 
   - screenshot:
       name: "login_success"
@@ -245,8 +242,6 @@ actions:
       value: "{password}"
     - action: click
       selector: submitButton
-    - action: waitForLoadState
-      state: networkidle
 
   logout:
     - action: click
@@ -285,8 +280,6 @@ actions:
   startTransfer:
     - action: click
       selector: transferButton
-    - action: waitForLoadState
-      state: networkidle
 ```
 
 **`pages/transfer.yaml`** — Money transfer form
@@ -325,8 +318,6 @@ actions:
       value: "{amount}"
     - action: click
       selector: submitButton
-    - action: waitForLoadState
-      state: networkidle
 ```
 
 ### 2. Role Data

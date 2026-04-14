@@ -52,7 +52,7 @@ if (envSuiteName) {
     projectRoot: PROJECT_ROOT,
     tags: envTags,
     excludeTags: envExcludeTags,
-    singleFile: envSingleFile,
+    ...(envSingleFile && { singleFile: envSingleFile }),
   });
 }
 

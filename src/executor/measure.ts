@@ -8,7 +8,7 @@ async function collectMetrics(ctx: RuntimeContext, metrics: readonly MetricName[
   const result: Partial<Record<MetricName, number>> = {};
 
   const timing = await ctx.page.evaluate<PerformanceTimingEntry>(() => {
-    const t = performance.timing;
+    const t = (performance as any).timing;
     return { loadEventEnd: t.loadEventEnd, navigationStart: t.navigationStart };
   });
 
@@ -25,7 +25,7 @@ async function collectMetrics(ctx: RuntimeContext, metrics: readonly MetricName[
           const last = entries[entries.length - 1];
           if (last) lcp = last.startTime;
         });
-        observer.observe({ type: 'largest-contentful-paint', buffered: true });
+        observer.observe({ type: 'largest-contentful-paint' as any, buffered: true });
         setTimeout(() => resolve(lcp), 100);
       })
     );
@@ -36,11 +36,11 @@ async function collectMetrics(ctx: RuntimeContext, metrics: readonly MetricName[
       new Promise<number>((resolve) => {
         let cls = 0;
         const observer = new PerformanceObserver((list) => {
-          for (const entry of list.getEntries() as LayoutShiftEntry[]) {
+          for (const entry of list.getEntries() as any[]) {
             if (!entry.hadRecentInput) cls += entry.value;
           }
         });
-        observer.observe({ type: 'layout-shift', buffered: true });
+        observer.observe({ type: 'layout-shift' as any, buffered: true });
         setTimeout(() => resolve(cls), 100);
       })
     );

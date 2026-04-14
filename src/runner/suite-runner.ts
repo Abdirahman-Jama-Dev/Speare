@@ -30,11 +30,11 @@ export function describeSuite(suitePath: string, projectRoot: string): SuiteRunS
 
   const effectiveConfig: FrameworkConfig = {
     ...frameworkConfig,
-    retries: suite.config?.retries ?? frameworkConfig.retries,
-    timeout: suite.config?.timeout ?? frameworkConfig.timeout,
+    ...(suite.config?.retries !== undefined && { retries: suite.config.retries }),
+    ...(suite.config?.timeout !== undefined && { timeout: suite.config.timeout }),
     parallel: {
       ...frameworkConfig.parallel,
-      workers: suite.config?.workers ?? frameworkConfig.parallel?.workers,
+      ...(suite.config?.workers && { workers: suite.config.workers }),
     },
   };
 

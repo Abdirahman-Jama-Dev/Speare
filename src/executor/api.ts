@@ -41,7 +41,7 @@ export class ApiExecutor implements StepExecutor<ApiStep> {
 
     const method = config.method.toLowerCase() as Lowercase<typeof config.method>;
     const response = await ctx.apiContext[method](config.url, {
-      headers,
+      ...(headers ? { headers } : {}),
       data: config.body ?? undefined,
     });
 
