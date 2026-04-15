@@ -39,7 +39,9 @@
             "status": { "type": "integer" },
             "jsonPath": { "type": "string" },
             "equals": {},
-            "contains": {}
+            "contains": {},
+            "greaterThan": { "type": "number" },
+            "lessThan": { "type": "number" }
           }
         },
         "save": { "type": "object", "additionalProperties": { "type": "string" } }
