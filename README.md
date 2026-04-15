@@ -228,7 +228,8 @@ selectors:
     type: role
     value: alert
   loginTitle:
-    type: heading
+    type: role
+    value: heading
     options:
       level: 1
 
@@ -967,11 +968,10 @@ suites/
 
 ## Next Steps
 
-1. **Review [DOCUMENTS.md](DOCUMENTS.md)** — Complete codebase documentation
-2. **Explore examples** — Check `tests/`, `pages/`, `suites/` directories
-3. **Run tests** — `npm test -- --suite smoke`
-4. **Customize pages** — Add your own page objects in `pages/`
-5. **Build test suites** — Organize by feature in `tests/`
+1. **Explore examples** — Check `tests/`, `pages/`, `suites/` directories
+2. **Run tests** — `npm test -- --suite smoke`
+3. **Customize pages** — Add your own page objects in `pages/`
+4. **Build test suites** — Organize by feature in `tests/`
 
 ---
 

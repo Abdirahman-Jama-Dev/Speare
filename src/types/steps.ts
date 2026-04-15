@@ -24,6 +24,8 @@ export interface ApiAssert {
   readonly jsonPath?: string;
   readonly equals?: unknown;
   readonly contains?: unknown;
+  readonly greaterThan?: number;
+  readonly lessThan?: number;
 }
 
 export interface ApiStepConfig {

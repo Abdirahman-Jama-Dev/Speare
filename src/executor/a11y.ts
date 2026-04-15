@@ -2,9 +2,21 @@ import type { A11yStep, StepExecutor, RuntimeContext } from '../types/index.js';
 
 async function runAxe(ctx: RuntimeContext, config: A11yStep['a11y']): Promise<void> {
   const { AxeBuilder } = await import('@axe-core/playwright');
-  const result = await new AxeBuilder({ page: ctx.page })
-    .include('button, input, form')
-    .analyze();
+  let builder = new AxeBuilder({ page: ctx.page });
+
+  if (config.include && config.include.length > 0) {
+    for (const selector of config.include) {
+      builder = builder.include(selector);
+    }
+  }
+
+  if (config.exclude && config.exclude.length > 0) {
+    for (const selector of config.exclude) {
+      builder = builder.exclude(selector);
+    }
+  }
+
+  const result = await builder.analyze();
 
   const violations = result.violations.filter((v) => {
     if (!config.severity || config.severity.length === 0) return true;

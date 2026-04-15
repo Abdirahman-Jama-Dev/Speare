@@ -14,12 +14,32 @@ function assertApiResponse(config: ApiStepConfig, status: number, body: unknown)
   }
   if (config.assert?.jsonPath) {
     const extracted = extractJsonPath(body, config.assert.jsonPath);
-    const expected = config.assert.equals;
-    if (JSON.stringify(extracted) !== JSON.stringify(expected)) {
-      throw new Error(
-        `API assertion failed: jsonPath "${config.assert.jsonPath}" ` +
-          `expected ${JSON.stringify(expected)}, got ${JSON.stringify(extracted)}`,
-      );
+
+    if (config.assert.equals !== undefined) {
+      if (JSON.stringify(extracted) !== JSON.stringify(config.assert.equals)) {
+        throw new Error(
+          `API assertion failed: jsonPath "${config.assert.jsonPath}" ` +
+            `expected ${JSON.stringify(config.assert.equals)}, got ${JSON.stringify(extracted)}`,
+        );
+      }
+    }
+
+    if (config.assert.greaterThan !== undefined) {
+      if (typeof extracted !== 'number' || extracted <= config.assert.greaterThan) {
+        throw new Error(
+          `API assertion failed: jsonPath "${config.assert.jsonPath}" ` +
+            `expected > ${config.assert.greaterThan}, got ${JSON.stringify(extracted)}`,
+        );
+      }
+    }
+
+    if (config.assert.lessThan !== undefined) {
+      if (typeof extracted !== 'number' || extracted >= config.assert.lessThan) {
+        throw new Error(
+          `API assertion failed: jsonPath "${config.assert.jsonPath}" ` +
+            `expected < ${config.assert.lessThan}, got ${JSON.stringify(extracted)}`,
+        );
+      }
     }
   }
 }
