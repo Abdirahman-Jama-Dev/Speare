@@ -132,6 +132,7 @@ function spawnPlaywright(config: RunConfig): void {
   // This avoids any conflict with Playwright's own CLI flag handling.
   const env: NodeJS.ProcessEnv = {
     ...process.env,
+    SPEARE_ROOT: PROJECT_ROOT,
     ...(config.tags.length > 0 ? { SPEARE_TAGS: config.tags.join(',') } : {}),
     ...(config.excludeTags.length > 0 ? { SPEARE_EXCLUDE_TAGS: config.excludeTags.join(',') } : {}),
     ...(config.suite ? { SPEARE_SUITE: config.suite } : {}),
@@ -150,7 +151,7 @@ function spawnPlaywright(config: RunConfig): void {
   const result = spawnSync('npx', playwrightArgs, {
     env,
     stdio: 'inherit',
-    cwd: PROJECT_ROOT,
+    cwd: frameworkRoot,
   });
 
   process.exit(result.status ?? 1);
