@@ -6,6 +6,45 @@ A **YAML-only test automation framework** for Playwright, designed for teams tha
 
 ---
 
+## AI Prompt for Project Setup
+
+Copy this into your AI assistant when starting a new Speare project:
+
+> **You are setting up a test project using the Speare framework (YAML-driven Playwright).**
+>
+> **Rules:**
+> - Never write tests inside the Speare directory. Create a separate project folder with its own `framework.config.yaml`, `.env`, `pages/`, `tests/`, `data/`, and `suites/` directories.
+> - Run tests by setting `SPEARE_ROOT=/path/to/your/project` and running `npm test` from the Speare directory, or by running from a directory that contains `framework.config.yaml`.
+> - All secrets and URLs go in `.env`. Reference them in YAML as `ENV.KEY_NAME` (no braces, no `$`).
+> - Role data files (`data/roles/*.yaml`) and config values can use `ENV.KEY_NAME` — it resolves automatically.
+> - Test variables use `{variableName}` brace syntax.
+>
+> **Allowed selector types (for resilient, non-brittle tests):**
+> - `role` — `page.getByRole()` (buttons, headings, links, etc.)
+> - `text` — `page.getByText()`
+> - `label` — `page.getByLabel()`
+> - `placeholder` — `page.getByPlaceholder()`
+> - `testId` — `page.getByTestId()`
+> - `alt` — `page.getByAltText()`
+> - `title` — `page.getByTitle()`
+>
+> CSS selectors and XPath are intentionally **not supported**. These selector types map to Playwright's user-facing locators, which are resistant to DOM structure changes and reflect how real users find elements.
+>
+> **Project structure:**
+> ```
+> my-project/
+> ├── .env
+> ├── framework.config.yaml
+> ├── pages/          # Page objects (selectors + actions)
+> ├── tests/          # Test definitions (YAML)
+> ├── data/roles/     # Role data (credentials, user profiles)
+> └── suites/         # Named test suites
+> ```
+>
+> **Step types available:** `ui`, `api`, `db`, `assert`, `screenshot`, `a11y`, `measure`, `mock`, `generate`, `eval`
+
+---
+
 ## Quick Start (5 minutes)
 
 ### 1. Install
@@ -985,5 +1024,5 @@ suites/
 ---
 
 **Version:** v0.1.0  
-**Last Updated:** 2026-04-13  
+**Last Updated:** 2026-04-15  
 **License:** Apache 2.0
