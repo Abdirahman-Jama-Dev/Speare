@@ -3,7 +3,7 @@ import * as path from 'path';
 import * as url from 'url';
 import { loadConfig } from './src/config/index.js';
 
-const PROJECT_ROOT = path.resolve(url.fileURLToPath(new URL('.', import.meta.url)));
+const PROJECT_ROOT = process.env.SPEARE_ROOT || path.resolve(url.fileURLToPath(new URL('.', import.meta.url)));
 const { frameworkConfig } = loadConfig(PROJECT_ROOT);
 
 const workers = (Number(process.env['SPEARE_WORKERS'] ?? 0) || frameworkConfig.parallel?.workers) ?? 1;

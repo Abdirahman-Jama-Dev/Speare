@@ -24,8 +24,8 @@ import { resolveFromRoot } from '../utils/path-resolution.js';
 
 // ─── Resolve Project Root ─────────────────────────────────────────────────────
 
-// dist/runner/ → project root (two levels up from compiled output)
-const PROJECT_ROOT = path.resolve(url.fileURLToPath(new URL('.', import.meta.url)), '..', '..');
+// Use SPEARE_ROOT if set (external project), otherwise fall back to dist/runner/ → project root
+const PROJECT_ROOT = process.env.SPEARE_ROOT || path.resolve(url.fileURLToPath(new URL('.', import.meta.url)), '..', '..');
 
 // ─── Load Config & Discover Tests ─────────────────────────────────────────────
 
