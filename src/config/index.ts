@@ -57,6 +57,35 @@ export function loadFrameworkConfig(projectRoot: string): FrameworkConfig {
   return validate(configPath, 'framework-config', parsed);
 }
 
+// ─── ENV Placeholder Resolution ────────────────────────────────────────────────
+
+const ENV_INLINE_RE = /ENV\.([A-Z0-9_]+)/g;
+
+/**
+ * Recursively resolve ENV.KEY placeholders inside a config object
+ * using the loaded .env map.
+ */
+function resolveEnvPlaceholders<T>(value: T, env: Record<string, string>): T {
+  if (typeof value === 'string') {
+    // Bare "ENV.KEY" → full replacement
+    if (/^ENV\.[A-Z0-9_]+$/.test(value)) {
+      const key = value.slice(4);
+      return (env[key] ?? value) as unknown as T;
+    }
+    // Inline ENV.KEY within a larger string
+    return value.replace(ENV_INLINE_RE, (match, key: string) => env[key] ?? match) as unknown as T;
+  }
+  if (Array.isArray(value)) {
+    return value.map((item) => resolveEnvPlaceholders(item, env)) as unknown as T;
+  }
+  if (typeof value === 'object' && value !== null) {
+    return Object.fromEntries(
+      Object.entries(value).map(([k, v]) => [k, resolveEnvPlaceholders(v, env)]),
+    ) as unknown as T;
+  }
+  return value;
+}
+
 // ─── Merged Config ─────────────────────────────────────────────────────────────
 
 export interface LoadedConfig {
@@ -67,6 +96,7 @@ export interface LoadedConfig {
 
 export function loadConfig(projectRoot: string): LoadedConfig {
   const env = loadEnvFile(projectRoot);
-  const frameworkConfig = loadFrameworkConfig(projectRoot);
+  const rawConfig = loadFrameworkConfig(projectRoot);
+  const frameworkConfig = resolveEnvPlaceholders(rawConfig, env);
   return { frameworkConfig, env };
 }
