@@ -47,11 +47,13 @@ Copy this into your AI assistant when starting a new Speare project:
 
 ## Quick Start (5 minutes)
 
+> **Important:** You must run `npm run setup` after cloning. It compiles the framework and installs Playwright browsers. Without it, tests will fail with module errors.
+
 ### 1. Install
 
 ```bash
 npm install
-npm run setup  # Installs Playwright browsers
+npm run setup  # Builds the framework + installs Playwright browsers
 ```
 
 ### 2. Configure `.env`
