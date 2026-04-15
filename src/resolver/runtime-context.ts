@@ -5,6 +5,7 @@ import type {
   DbQueryRunner,
   RuntimeContext,
 } from '../types/index.js';
+import { resolveEnvPlaceholders } from '../config/index.js';
 import { ConcreteExecutionContext } from './resolution-context.js';
 import type { ResolutionLayers } from './placeholder-resolver.js';
 
@@ -95,9 +96,13 @@ export function buildRuntimeContext(params: {
   readonly dbConnection: DbQueryRunner | null;
 }): ConcreteRuntimeContext {
   // Layer 2: test variables > data imports > role data
+  // Pre-resolve ENV.* references in role data and data imports so that
+  // {username} → "ENV.ADMIN_USERNAME" → actual value from .env
+  const resolvedRoleData = resolveEnvPlaceholders(params.roleData, params.env as Record<string, string>);
+  const resolvedDataImports = resolveEnvPlaceholders(params.dataImports, params.env as Record<string, string>);
   const testData: Record<string, unknown> = {
-    ...params.roleData,
-    ...params.dataImports,
+    ...resolvedRoleData,
+    ...resolvedDataImports,
     ...params.testVariables,
   };
 

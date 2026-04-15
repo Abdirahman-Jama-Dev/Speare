@@ -1,4 +1,5 @@
 import { resolveDeep, interpolateString, type ResolutionLayers } from './placeholder-resolver.js';
+import { resolveEnvPlaceholders } from '../config/index.js';
 import type { ExecutionContext, ResolutionSnapshot, FrameworkConfig } from '../types/index.js';
 
 // ─── Concrete Resolution Context ───────────────────────────────────────────────
@@ -58,9 +59,12 @@ export function buildExecutionContext(params: {
   const { config, env, roleData, testVariables, dataImports } = params;
 
   // Layer 2 precedence: test variables > data imports > role data
+  // Pre-resolve ENV.* references so {username} → "ENV.X" → actual value
+  const resolvedRoleData = resolveEnvPlaceholders(roleData, env as Record<string, string>);
+  const resolvedDataImports = resolveEnvPlaceholders(dataImports, env as Record<string, string>);
   const testData: Record<string, unknown> = {
-    ...roleData,
-    ...dataImports,
+    ...resolvedRoleData,
+    ...resolvedDataImports,
     ...testVariables,
   };
 
