@@ -25,9 +25,9 @@ const reporterList = process.env['SPEARE_REPORTERS']?.split(',').filter(Boolean)
 
 for (const r of reporterList) {
   switch (r) {
-    case 'json':   reporters.push(['json', { outputFile: 'reports/results.json' }]); break;
-    case 'junit':  reporters.push(['junit', { outputFile: 'reports/results.xml' }]); break;
-    case 'html':   reporters.push(['html', { outputFolder: 'reports/html' }]); break;
+    case 'json':   reporters.push(['json', { outputFile: path.join(PROJECT_ROOT, 'reports/results.json') }]); break;
+    case 'junit':  reporters.push(['junit', { outputFile: path.join(PROJECT_ROOT, 'reports/results.xml') }]); break;
+    case 'html':   reporters.push(['html', { outputFolder: path.join(PROJECT_ROOT, 'reports/html') }]); break;
     case 'allure': reporters.push(['allure-playwright']); break;
   }
 }
@@ -47,7 +47,7 @@ export default defineConfig({
 
   reporter: reporters,
 
-  outputDir: 'reports/artifacts',
+  outputDir: path.join(PROJECT_ROOT, 'reports/artifacts'),
 
   use: {
     baseURL: frameworkConfig.baseUrl,
