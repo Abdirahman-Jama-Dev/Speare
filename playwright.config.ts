@@ -3,7 +3,14 @@ import * as path from 'path';
 import * as url from 'url';
 import { loadConfig } from './src/config/index.js';
 
-const PROJECT_ROOT = process.env.SPEARE_ROOT || path.resolve(url.fileURLToPath(new URL('.', import.meta.url)));
+if (!process.env.SPEARE_ROOT) {
+  console.warn(
+    '[Speare] SPEARE_ROOT is not set — falling back to the framework directory.\n' +
+    '         Did you mean to run via the Speare CLI? Set SPEARE_ROOT to your project root.',
+  );
+}
+
+const PROJECT_ROOT = process.env.SPEARE_ROOT ?? path.resolve(url.fileURLToPath(new URL('.', import.meta.url)));
 const { frameworkConfig } = loadConfig(PROJECT_ROOT);
 
 const workers = (Number(process.env['SPEARE_WORKERS'] ?? 0) || frameworkConfig.parallel?.workers) ?? 1;
