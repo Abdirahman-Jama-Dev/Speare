@@ -6,7 +6,10 @@ export class NavigateExecutor implements StepExecutor<NavigateStep> {
 
   async execute(step: NavigateStep, ctx: RuntimeContext): Promise<RuntimeContext> {
     const { url, waitUntil = 'load' } = step.navigate;
-    await ctx.page.goto(url, { waitUntil });
+    const resolvedUrl = ctx.resolveDeep(url, -1, 'navigate') as string;
+    const baseUrl = ctx.config.baseUrl ?? '';
+    const fullUrl = resolvedUrl.startsWith('http') ? resolvedUrl : `${baseUrl}${resolvedUrl}`;
+    await ctx.page.goto(fullUrl, { waitUntil });
     return ctx;
   }
 }
