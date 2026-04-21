@@ -1016,6 +1016,21 @@ suites/
 
 ---
 
+## Known Issues & Roadmap
+
+The following are actively being worked on:
+
+| # | Item | Type |
+|---|------|------|
+| 1 | `click()` in UiExecutor does not wait for navigation — can cause race conditions on page transitions | Bug |
+| 2 | `clear` action not yet supported in UiExecutor — use `fill` with an empty string as a workaround | Missing feature |
+| 3 | `select` action does not work with Radix UI / shadcn comboboxes (custom dropdowns) | Bug |
+| 4 | MySQL driver ignores `queryTimeout` from config | Bug |
+| 5 | MSSQL transaction isolation uses the wrong pool connection | Bug |
+| 6 | SQLite does not support `queryTimeout` — no warning is shown when the option is set | Missing warning |
+
+---
+
 ## Resources
 
 - **RFD v1.2** — Full specification and design document
@@ -1026,5 +1041,5 @@ suites/
 ---
 
 **Version:** v0.1.0  
-**Last Updated:** 2026-04-15  
+**Last Updated:** 2026-04-21  
 **License:** Apache 2.0
