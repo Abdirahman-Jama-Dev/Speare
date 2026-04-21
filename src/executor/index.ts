@@ -13,6 +13,7 @@ import { MeasureExecutor } from './measure.js';
 import { DatabaseConnection } from './db-connection.js';
 import { DbExecutor } from './db.js';
 import { EvalExecutor } from './eval.js';
+import { NavigateExecutor } from './navigate.js';
 import { buildLocatorFromDefinition } from './locator-builder.js';
 
 export {
@@ -28,6 +29,7 @@ export {
   DatabaseConnection,
   DbExecutor,
   EvalExecutor,
+  NavigateExecutor,
   buildLocatorFromDefinition,
 };
 
@@ -48,5 +50,6 @@ export function buildDefaultRegistry(): ExecutorRegistry {
   r.register(new MeasureExecutor());
   r.register(new DbExecutor());
   r.register(new EvalExecutor());
+  r.register(new NavigateExecutor());
   return r;
 }

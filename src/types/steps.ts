@@ -145,6 +145,16 @@ export interface EvalStep extends BaseStep {
   };
 }
 
+// ─── Navigate Step ─────────────────────────────────────────────────────────────
+
+export interface NavigateStep extends BaseStep {
+  readonly navigate: {
+    readonly url: string;
+    /** Wait for a specific load state before continuing. Default: 'load' */
+    readonly waitUntil?: 'load' | 'domcontentloaded' | 'networkidle' | 'commit';
+  };
+}
+
 // ─── Union ─────────────────────────────────────────────────────────────────────
 
 export type AnyStep =
@@ -157,7 +167,8 @@ export type AnyStep =
   | A11yStep
   | MeasureStep
   | DbStep
-  | EvalStep;
+  | EvalStep
+  | NavigateStep;
 
 // ─── Hooks ─────────────────────────────────────────────────────────────────────
 
