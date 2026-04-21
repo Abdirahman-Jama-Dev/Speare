@@ -65,7 +65,7 @@ const ENV_INLINE_RE = /ENV\.([A-Z0-9_]+)/g;
  * Recursively resolve ENV.KEY placeholders inside a config object
  * using the loaded .env map.
  */
-function resolveEnvPlaceholders<T>(value: T, env: Record<string, string>): T {
+export function resolveEnvPlaceholders<T>(value: T, env: Record<string, string>): T {
   if (typeof value === 'string') {
     // Bare "ENV.KEY" → full replacement
     if (/^ENV\.[A-Z0-9_]+$/.test(value)) {
