@@ -9,6 +9,7 @@ import { logger } from '../utils/logger.js';
 import { buildDefaultRegistry } from '../executor/index.js';
 import { runSteps } from './retry.js';
 import { runHook } from './hooks.js';
+import { SpeareError, AppError, FrameworkError } from '../types/errors.js';
 
 // ─── Test Run Parameters ───────────────────────────────────────────────────────
 
@@ -72,13 +73,15 @@ export async function runTest(params: TestRunParams): Promise<void> {
   try {
     ctx = await runHook('beforeAll', definition.hooks, ctx, registry);
     ctx = await runHook('beforeEach', definition.hooks, ctx, registry);
-    await runSteps(definition.steps, ctx, registry, 0);
+    ctx = await runSteps(definition.steps, ctx, registry, 0);
   } catch (err) {
+    const classified = classifyError(err);
     logger.error(`Test failed: "${definition.name}"`, {
-      error: err instanceof Error ? err.message : String(err),
-      file: path.relative(params.projectRoot, params.filePath),
+      error:    classified.message,
+      category: classified.category,
+      file:     path.relative(params.projectRoot, params.filePath),
     });
-    throw err;
+    throw classified;
   } finally {
     // Cleanup hooks always run, even on failure
     try {
@@ -105,4 +108,25 @@ export async function runTest(params: TestRunParams): Promise<void> {
     // Unroute all mocks (belt-and-suspenders; BrowserContext.close() also cleans them)
     await params.page.unrouteAll();
   }
+}
+
+// ─── Error Classification ─────────────────────────────────────────────────────
+
+/**
+ * Ensure every error that surfaces from a test has a SpeareError category.
+ * Already-classified errors pass through. Playwright TimeoutErrors are
+ * treated as AppErrors (the app didn't respond). Everything else is a
+ * FrameworkError — it means Speare encountered something it didn't expect.
+ */
+function classifyError(err: unknown): SpeareError {
+  if (err instanceof SpeareError) return err;
+
+  const message = err instanceof Error ? err.message : String(err);
+
+  // Playwright timeout → the application under test didn't respond as expected
+  if (err instanceof Error && err.constructor.name === 'TimeoutError') {
+    return new AppError(`Playwright timeout: ${message}`);
+  }
+
+  return new FrameworkError(`Unexpected error: ${message}`);
 }

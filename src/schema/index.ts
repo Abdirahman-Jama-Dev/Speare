@@ -2,6 +2,7 @@ import Ajv from 'ajv';
 import addFormats from 'ajv-formats';
 import { createRequire } from 'module';
 import type { FrameworkConfig, PageObjectDefinition, RoleData, MockDefinition, SuiteDefinition, TestDefinition } from '../types/index.js';
+import { UserError } from '../types/errors.js';
 import type { ErrorObject } from 'ajv';
 
 const require = createRequire(import.meta.url);
@@ -32,7 +33,7 @@ export interface SchemaValidationError {
   readonly message: string;
 }
 
-export class YamlValidationError extends Error {
+export class YamlValidationError extends UserError {
   constructor(
     readonly filePath: string,
     readonly schemaName: SchemaName,

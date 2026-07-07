@@ -1,7 +1,7 @@
 import { defineConfig, devices } from '@playwright/test';
 import * as path from 'path';
 import * as url from 'url';
-import { loadConfig } from './src/config/index.js';
+import { loadConfig } from './dist/config/index.js';
 
 if (!process.env.SPEARE_ROOT) {
   console.warn(
@@ -10,7 +10,8 @@ if (!process.env.SPEARE_ROOT) {
   );
 }
 
-const PROJECT_ROOT = process.env.SPEARE_ROOT ?? path.resolve(url.fileURLToPath(new URL('.', import.meta.url)));
+const FRAMEWORK_ROOT = path.resolve(url.fileURLToPath(new URL('.', import.meta.url)));
+const PROJECT_ROOT   = process.env.SPEARE_ROOT ?? FRAMEWORK_ROOT;
 const { frameworkConfig } = loadConfig(PROJECT_ROOT);
 
 const workers = (Number(process.env['SPEARE_WORKERS'] ?? 0) || frameworkConfig.parallel?.workers) ?? 1;
@@ -35,14 +36,22 @@ for (const r of reporterList) {
     case 'json':   reporters.push(['json', { outputFile: path.join(PROJECT_ROOT, 'reports/results.json') }]); break;
     case 'junit':  reporters.push(['junit', { outputFile: path.join(PROJECT_ROOT, 'reports/results.xml') }]); break;
     case 'html':   reporters.push(['html', { outputFolder: path.join(PROJECT_ROOT, 'reports/html') }]); break;
-    case 'allure': reporters.push(['allure-playwright']); break;
+    case 'allure':      reporters.push(['allure-playwright']); break;
+    case 'speare-json': reporters.push([
+      path.join(FRAMEWORK_ROOT, 'dist', 'reporter', 'speare-reporter.js'),
+      { outputFile: path.join(PROJECT_ROOT, 'reports/results.json') },
+    ]); break;
   }
 }
 reporters.push(['list']); // always show live output
 
 export default defineConfig({
-  // The single entry point that generates tests from YAML
-  testMatch: ['**/runner/playwright-entry.ts'],
+  // The single entry point that generates tests from YAML.
+  // Points to the compiled JS so the container works without src/.
+  // A build (npm run build) is always required before running tests.
+  testMatch: ['**/dist/runner/playwright-entry.js'],
+  // dist/ is in .gitignore — prevent Playwright from skipping it.
+  respectGitIgnore: false,
 
   fullyParallel: true,
   workers,

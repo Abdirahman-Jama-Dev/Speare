@@ -1,5 +1,6 @@
 import type { Page } from 'playwright';
 import type { SelectorDefinition } from '../types/index.js';
+import { FrameworkError } from '../types/errors.js';
 
 /**
  * Shared locator builder used by the assert and ui executors.
@@ -31,7 +32,7 @@ export function buildLocatorFromDefinition(
       return page.getByTitle(value, options as Parameters<Page['getByTitle']>[1]);
     default: {
       const _exhaustive: never = type;
-      throw new Error(`Unsupported selector type: "${String(_exhaustive)}"`);
+      throw new FrameworkError(`Unsupported selector type: "${String(_exhaustive)}"`);
     }
   }
 }

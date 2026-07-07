@@ -2,6 +2,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import * as vm from 'vm';
 import type { EvalStep, StepExecutor, RuntimeContext } from '../types/index.js';
+import { UserError } from '../types/errors.js';
 import { logger } from '../utils/logger.js';
 
 function buildSandbox(input: Record<string, unknown>, ctx: RuntimeContext): vm.Context {
@@ -21,7 +22,7 @@ export class EvalExecutor implements StepExecutor<EvalStep> {
 
   async execute(step: EvalStep, ctx: RuntimeContext): Promise<RuntimeContext> {
     if (!ctx.config.security?.allowEval) {
-      throw new Error(
+      throw new UserError(
         `eval: step is disabled. Set "security.allowEval: true" in framework.config.yaml.\n` +
           `Script: "${step.eval.script}"`,
       );
@@ -29,7 +30,7 @@ export class EvalExecutor implements StepExecutor<EvalStep> {
 
     const scriptPath = path.resolve(ctx.projectRoot, step.eval.script);
     if (!fs.existsSync(scriptPath)) {
-      throw new Error(`eval: script not found: "${scriptPath}"`);
+      throw new UserError(`eval: script not found: "${scriptPath}"`);
     }
 
     logger.info(`eval: executing script`, { script: step.eval.script });

@@ -39,7 +39,7 @@
           "properties": {
             "action": {
               "type": "string",
-              "enum": ["fill", "click", "select", "check", "uncheck", "hover", "press"]
+              "enum": ["fill", "click", "select", "check", "uncheck", "hover", "press", "clear"]
             },
             "selector": { "type": "string", "minLength": 1 },
             "value": { "type": "string" }

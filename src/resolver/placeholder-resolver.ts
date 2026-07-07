@@ -1,5 +1,6 @@
 import { createMaskedValue, isMaskedValue } from '../types/masked-value.js';
 import { formatUnresolvedPlaceholderError } from '../utils/error-formatting.js';
+import { UserError } from '../types/errors.js';
 
 // ─── Placeholder Rules ─────────────────────────────────────────────────────────
 //
@@ -28,7 +29,7 @@ export interface ResolutionLayers {
   readonly stepOutputs: Readonly<Record<string, unknown>>;
 }
 
-export class UnresolvedPlaceholderError extends Error {
+export class UnresolvedPlaceholderError extends UserError {
   constructor(message: string) {
     super(message);
     this.name = 'UnresolvedPlaceholderError';

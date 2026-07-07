@@ -1,21 +1,22 @@
 import { JSONPath } from 'jsonpath-plus';
 import type { DbStep, StepExecutor, RuntimeContext } from '../types/index.js';
+import { AppError, UserError } from '../types/errors.js';
 
 function assertDbResult(rows: Array<Record<string, unknown>>, config: DbStep['db']): void {
   if (!config.assert) return;
 
   if (config.assert.rowCount !== undefined && rows.length !== config.assert.rowCount) {
-    throw new Error(
+    throw new AppError(
       `DB assertion failed: expected ${config.assert.rowCount} row(s), got ${rows.length}`,
     );
   }
 
   if (config.assert.column !== undefined && config.assert.equals !== undefined) {
     const firstRow = rows[0];
-    if (!firstRow) throw new Error(`DB assertion failed: no rows returned for column assertion`);
+    if (!firstRow) throw new AppError(`DB assertion failed: no rows returned for column assertion`);
     const actual = firstRow[config.assert.column];
     if (JSON.stringify(actual) !== JSON.stringify(config.assert.equals)) {
-      throw new Error(
+      throw new AppError(
         `DB assertion failed: column "${config.assert.column}" ` +
           `expected ${JSON.stringify(config.assert.equals)}, got ${JSON.stringify(actual)}`,
       );
@@ -28,7 +29,7 @@ export class DbExecutor implements StepExecutor<DbStep> {
 
   async execute(step: DbStep, ctx: RuntimeContext): Promise<RuntimeContext> {
     if (!ctx.dbConnection) {
-      throw new Error(
+      throw new UserError(
         `db: step requires a database connection. ` +
           `Configure "database:" in framework.config.yaml.`,
       );

@@ -1,6 +1,7 @@
 import { JSONPath } from 'jsonpath-plus';
 import { isMaskedValue } from '../types/masked-value.js';
 import type { ApiStep, ApiStepConfig, StepExecutor, RuntimeContext } from '../types/index.js';
+import { AppError } from '../types/errors.js';
 
 function extractJsonPath(body: unknown, path: string): unknown {
   return JSONPath({ path, json: body as object, wrap: false });
@@ -8,7 +9,7 @@ function extractJsonPath(body: unknown, path: string): unknown {
 
 function assertApiResponse(config: ApiStepConfig, status: number, body: unknown): void {
   if (config.assert?.status !== undefined && status !== config.assert.status) {
-    throw new Error(
+    throw new AppError(
       `API assertion failed: expected status ${config.assert.status}, got ${status}`,
     );
   }
@@ -17,7 +18,7 @@ function assertApiResponse(config: ApiStepConfig, status: number, body: unknown)
 
     if (config.assert.equals !== undefined) {
       if (JSON.stringify(extracted) !== JSON.stringify(config.assert.equals)) {
-        throw new Error(
+        throw new AppError(
           `API assertion failed: jsonPath "${config.assert.jsonPath}" ` +
             `expected ${JSON.stringify(config.assert.equals)}, got ${JSON.stringify(extracted)}`,
         );
@@ -26,7 +27,7 @@ function assertApiResponse(config: ApiStepConfig, status: number, body: unknown)
 
     if (config.assert.greaterThan !== undefined) {
       if (typeof extracted !== 'number' || extracted <= config.assert.greaterThan) {
-        throw new Error(
+        throw new AppError(
           `API assertion failed: jsonPath "${config.assert.jsonPath}" ` +
             `expected > ${config.assert.greaterThan}, got ${JSON.stringify(extracted)}`,
         );
@@ -35,7 +36,7 @@ function assertApiResponse(config: ApiStepConfig, status: number, body: unknown)
 
     if (config.assert.lessThan !== undefined) {
       if (typeof extracted !== 'number' || extracted >= config.assert.lessThan) {
-        throw new Error(
+        throw new AppError(
           `API assertion failed: jsonPath "${config.assert.jsonPath}" ` +
             `expected < ${config.assert.lessThan}, got ${JSON.stringify(extracted)}`,
         );

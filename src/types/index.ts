@@ -5,3 +5,5 @@ export type { StepExecutor } from './executor.js';
 export type { MaskedValue } from './masked-value.js';
 export type { RunConfig } from './run-config.js';
 export type { DbQueryRunner } from './db.js';
+export { SpeareError, UserError, AppError, FrameworkError } from './errors.js';
+export type { ErrorCategory } from './errors.js';

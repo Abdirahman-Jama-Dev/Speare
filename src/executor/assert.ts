@@ -1,4 +1,5 @@
 import type { AssertStep, StepExecutor, RuntimeContext } from '../types/index.js';
+import { AppError } from '../types/errors.js';
 import { buildLocatorFromDefinition } from './locator-builder.js';
 
 // ─── Assert Executor ───────────────────────────────────────────────────────────
@@ -19,18 +20,18 @@ export class AssertExecutor implements StepExecutor<AssertStep> {
 
     if (config.visible === true) {
       await locator.waitFor({ state: 'visible' }).catch(() => {
-        throw new Error(`Assert failed: expected element (${label}) to be visible`);
+        throw new AppError(`Assert failed: expected element (${label}) to be visible`);
       });
     } else if (config.visible === false) {
       await locator.waitFor({ state: 'hidden' }).catch(() => {
-        throw new Error(`Assert failed: expected element (${label}) to be hidden`);
+        throw new AppError(`Assert failed: expected element (${label}) to be hidden`);
       });
     }
 
     if (config.text !== undefined) {
       const actual = (await locator.textContent()) ?? '';
       if (!actual.includes(config.text as string)) {
-        throw new Error(
+        throw new AppError(
           `Assert failed: expected text "${config.text as string}" not found in (${label}).\n` +
             `  Actual: "${actual}"`,
         );
@@ -40,7 +41,7 @@ export class AssertExecutor implements StepExecutor<AssertStep> {
     if (config.value !== undefined) {
       const actual = await locator.inputValue();
       if (actual !== config.value) {
-        throw new Error(
+        throw new AppError(
           `Assert failed: expected input value "${config.value as string}", ` +
             `got "${actual}" for (${label})`,
         );
@@ -50,7 +51,7 @@ export class AssertExecutor implements StepExecutor<AssertStep> {
     if (config.count !== undefined) {
       const actual = await locator.count();
       if (actual !== config.count) {
-        throw new Error(
+        throw new AppError(
           `Assert failed: expected count ${config.count as number}, got ${actual} for (${label})`,
         );
       }
@@ -58,18 +59,18 @@ export class AssertExecutor implements StepExecutor<AssertStep> {
 
     if (config.enabled === true) {
       const ok = await locator.isEnabled();
-      if (!ok) throw new Error(`Assert failed: expected element (${label}) to be enabled`);
+      if (!ok) throw new AppError(`Assert failed: expected element (${label}) to be enabled`);
     } else if (config.enabled === false) {
       const ok = await locator.isEnabled();
-      if (ok) throw new Error(`Assert failed: expected element (${label}) to be disabled`);
+      if (ok) throw new AppError(`Assert failed: expected element (${label}) to be disabled`);
     }
 
     if (config.checked === true) {
       const ok = await locator.isChecked();
-      if (!ok) throw new Error(`Assert failed: expected element (${label}) to be checked`);
+      if (!ok) throw new AppError(`Assert failed: expected element (${label}) to be checked`);
     } else if (config.checked === false) {
       const ok = await locator.isChecked();
-      if (ok) throw new Error(`Assert failed: expected element (${label}) to be unchecked`);
+      if (ok) throw new AppError(`Assert failed: expected element (${label}) to be unchecked`);
     }
 
     return ctx;

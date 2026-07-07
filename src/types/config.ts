@@ -22,7 +22,7 @@ export interface SelectorMap {
 // ─── Page Object ───────────────────────────────────────────────────────────────
 
 export interface PageAction {
-  readonly action: 'fill' | 'click' | 'select' | 'check' | 'uncheck' | 'hover' | 'press';
+  readonly action: 'fill' | 'click' | 'select' | 'check' | 'uncheck' | 'hover' | 'press' | 'clear';
   readonly selector: string;
   readonly value?: string;
 }

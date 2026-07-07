@@ -1,6 +1,8 @@
 import type { DatabaseConfig } from '../types/index.js';
 import { isMaskedValue } from '../types/masked-value.js';
 import type { DbQueryRunner } from '../types/db.js';
+import { logger } from '../utils/logger.js';
+import { UserError, FrameworkError } from '../types/errors.js';
 
 // ─── Row Type ─────────────────────────────────────────────────────────────────
 
@@ -24,7 +26,7 @@ interface DbDriver {
 function assertReadonly(sql: string): void {
   const trimmed = sql.trim().toUpperCase();
   if (!trimmed.startsWith('SELECT') && !trimmed.startsWith('WITH')) {
-    throw new Error(
+    throw new UserError(
       `DB isolation mode is "readonly" — only SELECT queries are permitted.\n` +
         `Rejected query: "${sql.slice(0, 80)}${sql.length > 80 ? '...' : ''}"`,
     );
@@ -64,8 +66,8 @@ async function buildMysqlDriver(connectionString: string): Promise<DbDriver> {
   const connection = await mysql.createConnection(connectionString);
 
   return {
-    async query(sql) {
-      const [rows] = await connection.execute(sql);
+    async query(sql, timeout) {
+      const [rows] = await connection.execute({ sql, timeout });
       return rows as DbRow[];
     },
     async beginTransaction() {
@@ -82,7 +84,10 @@ async function buildMysqlDriver(connectionString: string): Promise<DbDriver> {
 
 // ─── SQLite Driver ────────────────────────────────────────────────────────────
 
-async function buildSqliteDriver(filename: string): Promise<DbDriver> {
+async function buildSqliteDriver(filename: string, queryTimeout?: number): Promise<DbDriver> {
+  if (queryTimeout !== undefined) {
+    logger.warn('SQLite does not support queryTimeout — the setting will be ignored.', { queryTimeout });
+  }
   const { default: Database } = await import('better-sqlite3');
   const db = new Database(filename);
 
@@ -107,19 +112,26 @@ async function buildSqliteDriver(filename: string): Promise<DbDriver> {
 async function buildMssqlDriver(connectionString: string): Promise<DbDriver> {
   const mssql = await import('mssql');
   const pool = await mssql.connect(connectionString);
+  let transaction: InstanceType<typeof mssql.Transaction> | null = null;
 
   return {
     async query(sql, timeout) {
-      const request = pool.request();
+      const request = transaction
+        ? new mssql.Request(transaction)
+        : pool.request();
       (request as any).timeout = timeout;
       const result = await request.query(sql);
       return result.recordset as DbRow[];
     },
     async beginTransaction() {
-      await pool.request().query('BEGIN TRANSACTION');
+      transaction = new mssql.Transaction(pool);
+      await transaction.begin();
     },
     async rollbackTransaction() {
-      await pool.request().query('ROLLBACK TRANSACTION');
+      if (transaction) {
+        await transaction.rollback();
+        transaction = null;
+      }
     },
     async close() {
       await pool.close();
@@ -156,14 +168,14 @@ export class DatabaseConnection implements DbQueryRunner {
         this.driver = await buildMysqlDriver(cs);
         break;
       case 'sqlite':
-        this.driver = await buildSqliteDriver(cs);
+        this.driver = await buildSqliteDriver(cs, this.config.queryTimeout);
         break;
       case 'mssql':
         this.driver = await buildMssqlDriver(cs);
         break;
       default: {
         const _exhaustive: never = this.config.driver;
-        throw new Error(`Unsupported database driver: "${String(_exhaustive)}"`);
+        throw new FrameworkError(`Unsupported database driver: "${String(_exhaustive)}"`);
       }
     }
 
@@ -174,7 +186,7 @@ export class DatabaseConnection implements DbQueryRunner {
   }
 
   async query(sql: string): Promise<DbRow[]> {
-    if (!this.driver) throw new Error('DatabaseConnection: connect() must be called before query()');
+    if (!this.driver) throw new FrameworkError('DatabaseConnection: connect() must be called before query()');
 
     const isolationMode = this.config.isolationMode ?? 'readonly';
     if (isolationMode === 'readonly') {

@@ -2,6 +2,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import yaml from 'js-yaml';
 import { validate } from '../schema/index.js';
+import { UserError } from '../types/errors.js';
 import { listYamlFiles, resolveFromRoot } from '../utils/path-resolution.js';
 import type {
   TestDefinition,
@@ -15,7 +16,7 @@ import type {
 
 export function parseYamlFile(filePath: string): unknown {
   if (!fs.existsSync(filePath)) {
-    throw new Error(`File not found: "${filePath}"`);
+    throw new UserError(`File not found: "${filePath}"`);
   }
   const raw = fs.readFileSync(filePath, 'utf-8');
   return yaml.load(raw);
@@ -59,7 +60,7 @@ export async function loadPageObjectRegistry(
   for (const file of files) {
     const po = loadPageObject(file);
     if (registry.has(po.name)) {
-      throw new Error(
+      throw new UserError(
         `Duplicate page object name "${po.name}" found in:\n` +
           `  - ${registry.get(po.name)?.name}\n` +
           `  - ${file}`,
