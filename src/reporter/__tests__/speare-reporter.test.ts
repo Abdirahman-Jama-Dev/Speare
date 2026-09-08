@@ -74,6 +74,28 @@ function runReporter(projectSuites: Suite[], fullResult: FullResult = makeFullRe
   return JSON.parse(fs.readFileSync(outputFile, 'utf-8'));
 }
 
+// ─── Result-shape accessors ──────────────────────────────────────────────────
+// noUncheckedIndexedAccess makes every [0] potentially undefined; these assert
+// the shape the tests below rely on and fail loudly if the reporter drops it.
+
+interface ReportedTest {
+  readonly error: { readonly category: string } | null;
+  readonly retries: number;
+}
+
+function reportedTests(result: Record<string, unknown>): readonly ReportedTest[] {
+  const suites = result.suites as ReadonlyArray<{ tests: readonly ReportedTest[] }>;
+  const tests = suites[0]?.tests;
+  if (tests === undefined) throw new Error('expected result.suites[0].tests');
+  return tests;
+}
+
+function firstReportedTest(result: Record<string, unknown>): ReportedTest {
+  const test = reportedTests(result)[0];
+  if (test === undefined) throw new Error('expected result.suites[0].tests[0]');
+  return test;
+}
+
 // ─── Tests ────────────────────────────────────────────────────────────────────
 
 describe('SpeareReporter', () => {
@@ -113,8 +135,7 @@ describe('SpeareReporter', () => {
       ]),
     ], makeFullResult('failed')) as Record<string, unknown>;
 
-    const suites = result.suites as Array<{ tests: Array<{ error: { category: string } }> }>;
-    expect(suites[0].tests[0].error.category).toBe('user');
+    expect(firstReportedTest(result).error?.category).toBe('user');
   });
 
   it('extracts category:app from an AppError stack', () => {
@@ -125,8 +146,7 @@ describe('SpeareReporter', () => {
       ]),
     ], makeFullResult('failed')) as Record<string, unknown>;
 
-    const suites = result.suites as Array<{ tests: Array<{ error: { category: string } }> }>;
-    expect(suites[0].tests[0].error.category).toBe('app');
+    expect(firstReportedTest(result).error?.category).toBe('app');
   });
 
   it('extracts category:framework from a FrameworkError stack', () => {
@@ -137,8 +157,7 @@ describe('SpeareReporter', () => {
       ]),
     ], makeFullResult('failed')) as Record<string, unknown>;
 
-    const suites = result.suites as Array<{ tests: Array<{ error: { category: string } }> }>;
-    expect(suites[0].tests[0].error.category).toBe('framework');
+    expect(firstReportedTest(result).error?.category).toBe('framework');
   });
 
   it('defaults to category:framework for unknown error class names', () => {
@@ -149,8 +168,7 @@ describe('SpeareReporter', () => {
       ]),
     ], makeFullResult('failed')) as Record<string, unknown>;
 
-    const suites = result.suites as Array<{ tests: Array<{ error: { category: string } }> }>;
-    expect(suites[0].tests[0].error.category).toBe('framework');
+    expect(firstReportedTest(result).error?.category).toBe('framework');
   });
 
   it('extracts category:user from YamlValidationError and UnresolvedPlaceholderError', () => {
@@ -164,9 +182,9 @@ describe('SpeareReporter', () => {
       ]),
     ], makeFullResult('failed')) as Record<string, unknown>;
 
-    const tests = (result.suites as Array<{ tests: Array<{ error: { category: string } }> }>)[0].tests;
-    expect(tests[0].error.category).toBe('user');
-    expect(tests[1].error.category).toBe('user');
+    const tests = reportedTests(result);
+    expect(tests[0]?.error?.category).toBe('user');
+    expect(tests[1]?.error?.category).toBe('user');
   });
 
   it('sets error to null for passing tests', () => {
@@ -174,8 +192,7 @@ describe('SpeareReporter', () => {
       makeProjectSuite('chromium', [makeTest('OK test', { status: 'passed' })]),
     ]) as Record<string, unknown>;
 
-    const suites = result.suites as Array<{ tests: Array<{ error: unknown }> }>;
-    expect(suites[0].tests[0].error).toBeNull();
+    expect(firstReportedTest(result).error).toBeNull();
   });
 
   it('captures retry count from the last test result', () => {
@@ -185,8 +202,7 @@ describe('SpeareReporter', () => {
       ]),
     ]) as Record<string, unknown>;
 
-    const suites = result.suites as Array<{ tests: Array<{ retries: number }> }>;
-    expect(suites[0].tests[0].retries).toBe(2);
+    expect(firstReportedTest(result).retries).toBe(2);
   });
 
   it('includes startedAt as an ISO 8601 string', () => {
